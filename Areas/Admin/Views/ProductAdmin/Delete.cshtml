@@ -1,0 +1,46 @@
+﻿@model WebD_T.Areas.Admin.Models.ProductAdmin
+
+
+<h2 class="h4 mb-3 text-danger">Xóa sản phẩm</h2>
+
+<div class="alert alert-warning">
+    Bạn có chắc chắn muốn xóa sản phẩm sau không?
+</div>
+
+<div class="card mb-3">
+    <div class="card-body row">
+        <div class="col-md-4 text-center mb-3">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded border"
+                     style="max-height:200px;" />
+            }
+        </div>
+        <div class="col-md-8">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Mã sản phẩm</dt>
+                <dd class="col-sm-8">@Model.Id</dd>
+
+                <dt class="col-sm-4">Tên sản phẩm</dt>
+                <dd class="col-sm-8">@Model.Name</dd>
+
+                <dt class="col-sm-4">Danh mục</dt>
+                <dd class="col-sm-8">@Model.CategoryName</dd>
+
+                <dt class="col-sm-4">Giá</dt>
+                <dd class="col-sm-8">@String.Format("{0:N0} đ", Model.Price)</dd>
+
+                <dt class="col-sm-4">Số lượng tồn</dt>
+                <dd class="col-sm-8">@Model.StockQuantity</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+
+<form asp-area="Admin" asp-controller="ProductAdmin" asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-area="Admin" asp-controller="ProductAdmin" asp-action="Index"
+       class="btn btn-secondary ms-1">Hủy</a>
+</form>

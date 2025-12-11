@@ -1,0 +1,90 @@
+﻿@model WebD_T.Areas.Admin.Models.UserAdmin
+
+@{
+    ViewData["Title"] = "Thêm tài khoản";
+}
+
+<div class="container-fluid px-4">
+    <h2 class="mt-4 fw-bold">Thêm tài khoản mới</h2>
+
+    <div class="card shadow-sm mt-3">
+        <div class="card-body">
+
+            <form asp-area="Admin" asp-controller="UserAdmin" asp-action="Create" method="post">
+
+                <!-- Username -->
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">Username</label>
+                    <div class="col-sm-10">
+                        <input asp-for="Username" class="form-control" />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">Email</label>
+                    <div class="col-sm-10">
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">Mật khẩu</label>
+                    <div class="col-sm-10">
+                        <input asp-for="Password" class="form-control" type="password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Fullname -->
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">Họ và tên</label>
+                    <div class="col-sm-10">
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Phone -->
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">Số điện thoại</label>
+                    <div class="col-sm-10">
+                        <input asp-for="PhoneNumber" class="form-control" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Role -->
+                <div class="row mb-4">
+                    <label class="col-sm-2 col-form-label">Quyền</label>
+                    <div class="col-sm-10">
+                        <select asp-for="Role" class="form-select">
+                            <option value="customer">Khách hàng</option>
+                            <option value="staff">Nhân viên</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-end">
+                    <a href="/Admin/UserAdmin" class="btn btn-secondary me-2">Hủy</a>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Tạo tài khoản
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,33 @@
+﻿@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<h2>Đăng nhập</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div style="color:red; margin-bottom:10px;">
+        @TempData["Error"]
+    </div>
+}
+
+<form method="post" action="/Account/Login" style="max-width: 300px;">
+    <div>
+        <label>Email</label><br />
+        <input type="email" name="email" required style="width:100%; padding:5px;" />
+    </div>
+
+    <div style="margin-top:10px;">
+        <label>Password</label><br />
+        <input type="password" name="password" required style="width:100%; padding:5px;" />
+    </div>
+
+    <button type="submit"
+            style="margin-top:15px; width:100%; padding:8px; background:#007bff; color:white; border:none;">
+        Đăng nhập
+    </button>
+
+    <div style="margin-top:10px;">
+        <a href="/Account/Register">Chưa có tài khoản? Đăng ký</a>
+    </div>
+</form>

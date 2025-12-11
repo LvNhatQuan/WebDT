@@ -1,0 +1,38 @@
+﻿@model WebD_T.Areas.Admin.Models.CategoryAdmin
+
+
+<h2 class="h4 mb-3">Sửa danh mục</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-area="Admin" asp-controller="CategoryAdmin" asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+            <a asp-area="Admin" asp-controller="CategoryAdmin" asp-action="Index"
+               class="btn btn-secondary ms-1">Quay lại</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

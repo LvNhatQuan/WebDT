@@ -1,0 +1,49 @@
+﻿@model WebD_T.Models.User
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<h2>Đăng ký tài khoản</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div style="color:red; margin-bottom:10px;">
+        @TempData["Error"]
+    </div>
+}
+
+<form method="post" action="/Account/Register" style="max-width: 300px;">
+    <div>
+        <label>Username</label><br />
+        <input type="text" name="Username" required style="width:100%; padding:5px;" />
+    </div>
+
+    <div style="margin-top:10px;">
+        <label>Email</label><br />
+        <input type="email" name="Email" required style="width:100%; padding:5px;" />
+    </div>
+
+    <div style="margin-top:10px;">
+        <label>Password</label><br />
+        <input type="password" name="Password" required style="width:100%; padding:5px;" />
+    </div>
+
+    <div style="margin-top:10px;">
+        <label>Full name</label><br />
+        <input type="text" name="FullName" required style="width:100%; padding:5px;" />
+    </div>
+
+    <div style="margin-top:10px;">
+        <label>Phone</label><br />
+        <input type="text" name="PhoneNumber" required style="width:100%; padding:5px;" />
+    </div>
+
+    <button type="submit"
+            style="margin-top:15px; width:100%; padding:8px; background:green; color:white; border:none;">
+        Đăng ký
+    </button>
+
+    <div style="margin-top:10px;">
+        <a href="/Account/Login">Quay lại đăng nhập</a>
+    </div>
+</form>

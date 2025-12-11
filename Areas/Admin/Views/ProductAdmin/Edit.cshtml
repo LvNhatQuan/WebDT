@@ -1,0 +1,84 @@
+﻿@model WebD_T.Areas.Admin.Models.ProductFormAdmin
+
+
+<h2 class="h4 mb-3">Sửa sản phẩm</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-area="Admin" asp-controller="ProductAdmin" asp-action="Edit"
+              method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CategoryIdSelected" class="form-label">Danh mục</label>
+                <select asp-for="CategoryIdSelected" class="form-select"
+                        asp-items="Model.ListCategory">
+                    <option value="">-- Chọn danh mục --</option>
+                </select>
+                <span asp-validation-for="CategoryIdSelected" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Price" class="form-label"></label>
+                    <input asp-for="Price" class="form-control" />
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="StockQuantity" class="form-label"></label>
+                    <input asp-for="StockQuantity" class="form-control" />
+                    <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label"></label>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <div class="mb-3">
+                    <label class="form-label">Ảnh hiện tại</label><br />
+                    <img src="@Model.ImageUrl" alt="@Model.Name" style="max-height:150px;" class="rounded border" />
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label">Đổi ảnh (nếu muốn)</label>
+                <input type="file" name="ImageUpload" class="form-control" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+            <a asp-area="Admin" asp-controller="ProductAdmin" asp-action="Index"
+               class="btn btn-secondary ms-1">Quay lại</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

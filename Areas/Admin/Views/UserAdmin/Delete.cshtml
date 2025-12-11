@@ -1,0 +1,65 @@
+﻿@model WebD_T.Areas.Admin.Models.UserAdmin
+
+@{
+    ViewData["Title"] = "Xóa tài khoản";
+}
+
+<div class="container-fluid px-4">
+    <h2 class="mt-4 fw-bold text-danger">Xóa tài khoản</h2>
+
+    <div class="alert alert-warning mt-3">
+        <strong>Bạn có chắc chắn muốn xóa tài khoản này?</strong><br />
+        Hành động này không thể hoàn tác.
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <dl class="row">
+                <dt class="col-sm-3">ID</dt>
+                <dd class="col-sm-9">@Model.Id</dd>
+
+                <dt class="col-sm-3">Username</dt>
+                <dd class="col-sm-9">@Model.Username</dd>
+
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">@Model.Email</dd>
+
+                <dt class="col-sm-3">Họ tên</dt>
+                <dd class="col-sm-9">@Model.FullName</dd>
+
+                <dt class="col-sm-3">Số điện thoại</dt>
+                <dd class="col-sm-9">@Model.PhoneNumber</dd>
+
+                <dt class="col-sm-3">Quyền</dt>
+                <dd class="col-sm-9">
+                    @if (Model.Role == "admin")
+                    {
+                        <span class="badge bg-danger">Admin</span>
+                    }
+                    else if (Model.Role == "staff")
+                    {
+                        <span class="badge bg-warning text-dark">Nhân viên</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Khách hàng</span>
+                    }
+                </dd>
+            </dl>
+
+            <form asp-area="Admin" asp-controller="UserAdmin" asp-action="Delete" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="d-flex justify-content-end mt-4">
+                    <a href="/Admin/UserAdmin" class="btn btn-secondary me-2">Hủy</a>
+
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Xóa tài khoản
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,42 @@
+﻿@model WebD_T.Areas.Admin.Models.CategoryAdmin
+
+<div class="row">
+    <div class="col-md-8 col-lg-6">
+        <h2 class="h4 mb-3 text-danger">Xóa danh mục</h2>
+
+        <div class="alert alert-warning">
+            Bạn có chắc chắn muốn xóa danh mục sau đây không?
+        </div>
+
+        <dl class="row mb-3">
+            <dt class="col-sm-3">ID</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+
+            <dt class="col-sm-3">Tên danh mục</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Mô tả</dt>
+            <dd class="col-sm-9">@Model.Description</dd>
+        </dl>
+
+        <form asp-area="Admin"
+              asp-controller="CategoryAdmin"
+              asp-action="Delete"
+              method="post">
+            @Html.AntiForgeryToken()
+
+       
+            <input type="hidden" asp-for="Id" />
+
+            <button type="submit" class="btn btn-danger me-2">
+                Xóa
+            </button>
+            <a asp-area="Admin"
+               asp-controller="CategoryAdmin"
+               asp-action="Index"
+               class="btn btn-secondary">
+                Quay lại
+            </a>
+        </form>
+    </div>
+</div>

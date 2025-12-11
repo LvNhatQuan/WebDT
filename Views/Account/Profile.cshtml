@@ -1,0 +1,75 @@
+﻿@model WebD_T.Models.User
+
+@{
+    ViewData["Title"] = "Thông tin tài khoản";
+}
+
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">Thông tin tài khoản</h2>
+
+    <!-- Thông báo -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form asp-controller="Account" asp-action="Profile" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <!-- USERNAME -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Username</label>
+                    <input asp-for="Username" class="form-control" readonly />
+                </div>
+
+                <!-- EMAIL -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <!-- FULL NAME -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Họ và tên</label>
+                    <input asp-for="FullName" class="form-control" />
+                </div>
+
+                <!-- PHONE NUMBER -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Số điện thoại</label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                </div>
+
+                <!-- ROLE -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Quyền</label>
+                    <input asp-for="Role" class="form-control" readonly />
+                </div>
+
+                <!-- BUTTONS -->
+                <div class="d-flex justify-content-end mt-3">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check-lg"></i> Lưu thay đổi
+                    </button>
+
+                    <a href="/" class="btn btn-secondary ms-2">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

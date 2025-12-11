@@ -1,0 +1,26 @@
+﻿@model WebD_T.Areas.Admin.Models.CategoryAdmin
+
+
+<h2 class="h4 mb-3">Chi tiết danh mục</h2>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Mã danh mục</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+
+            <dt class="col-sm-3">Tên danh mục</dt>
+            <dd class="col-sm-9">@Model.Name</dd>
+
+            <dt class="col-sm-3">Mô tả</dt>
+            <dd class="col-sm-9">@Model.Description</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-area="Admin" asp-controller="CategoryAdmin" asp-action="Edit"
+       asp-route-id="@Model.Id" class="btn btn-primary">Sửa</a>
+    <a asp-area="Admin" asp-controller="CategoryAdmin" asp-action="Index"
+       class="btn btn-secondary ms-1">Quay lại</a>
+</div>

@@ -1,0 +1,40 @@
+﻿@model WebD_T.Areas.Admin.Models.CustomerAdmin
+
+<h2>Thông tin khách hàng</h2>
+
+<div class="card p-3">
+    <p><strong>ID:</strong> @Model.Id</p>
+    <p><strong>Tên đăng nhập:</strong> @Model.Username</p>
+    <p><strong>Email:</strong> @Model.Email</p>
+    <p><strong>Họ tên:</strong> @Model.FullName</p>
+    <p><strong>Số điện thoại:</strong> @Model.PhoneNumber</p>
+    <p><strong>Ngày tạo:</strong> @Model.CreatedAt</p>
+</div>
+
+<hr />
+
+<h3>Lịch sử đơn hàng</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Mã đơn</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>Địa chỉ giao</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in (List<dynamic>)ViewBag.Orders)
+        {
+            <tr>
+                <td>@o.Id</td>
+                <td>@o.OrderDate.ToString("dd/MM/yyyy")</td>
+                <td>@String.Format("{0:N0} đ", o.Total)</td>
+                <td>@o.Address</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a href="/Admin/CustomerAdmin" class="btn btn-secondary">Quay lại</a>

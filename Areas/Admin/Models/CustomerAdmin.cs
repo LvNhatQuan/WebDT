@@ -1,0 +1,12 @@
+﻿namespace WebD_T.Areas.Admin.Models
+{
+    public class CustomerAdmin
+    {
+        public int Id { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string FullName { get; set; }
+        public string PhoneNumber { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+}

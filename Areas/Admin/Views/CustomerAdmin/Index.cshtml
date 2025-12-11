@@ -1,0 +1,35 @@
+﻿@model List<WebD_T.Areas.Admin.Models.CustomerAdmin>
+
+<h2>Danh sách khách hàng</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tên đăng nhập</th>
+            <th>Email</th>
+            <th>Họ tên</th>
+            <th>SĐT</th>
+            <th>Ngày tạo</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Id</td>
+                <td>@c.Username</td>
+                <td>@c.Email</td>
+                <td>@c.FullName</td>
+                <td>@c.PhoneNumber</td>
+                <td>@c.CreatedAt.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <a class="btn btn-primary btn-sm"
+                       href="/Admin/CustomerAdmin/Details/@c.Id">Xem chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
