@@ -6,229 +6,215 @@ namespace WebDT.DAL
 {
     public class ProductDAL
     {
-        private readonly DbConnect db = new DbConnect();
+        private readonly DbConnect _db = new DbConnect();
 
-        // ============================
-        // Map Product từ SQL
-        // ============================
-        private Product MapProduct(SqlDataReader r)
+        // Lấy toàn bộ sản phẩm
+        public List<Product> GetAllProducts()
         {
-            return new Product
-            {
-                Id = Convert.ToInt32(r["id"]),
-                CategoryId = r["category_id"] != DBNull.Value ? Convert.ToInt32(r["category_id"]) : 0,
-                Name = r["name"].ToString(),
-                Description = r["description"].ToString(),
-                Price = Convert.ToInt32(r["price"]),
-                Stock_quantity = Convert.ToInt32(r["stock_quantity"]),
-                Image_url = r["image_url"].ToString(),
-                Is_active = Convert.ToBoolean(r["is_active"]),
-                Created_at = Convert.ToDateTime(r["created_at"])
-            };
-        }
+            List<Product> list = new();
+            string sql = @"SELECT id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
+                           FROM products
+                           ORDER BY created_at DESC";
 
-        // ============================
-        // 1) Lấy tất cả sản phẩm (dùng cho Admin)
-        // ============================
-        public List<Product> GetAll()
-        {
-            db.openConnection();
-            List<Product> list = new List<Product>();
+            _db.OpenConnection();
+            using var cmd = new SqlCommand(sql, _db.GetConnection());
+            using var reader = cmd.ExecuteReader();
 
-            using var cmd = new SqlCommand("SELECT * FROM products ORDER BY id DESC", db.getConnecttion());
-            using var r = cmd.ExecuteReader();
+            while (reader.Read()) list.Add(MapToProduct(reader));
 
-            while (r.Read())
-                list.Add(MapProduct(r));
-
-            db.closeConnection();
+            _db.CloseConnection();
             return list;
         }
 
-        // ============================
-        // 2) Lấy sản phẩm theo ID
-        // ============================
-        public Product? GetById(int id)
+        // Lấy sản phẩm theo ID
+        public Product? GetProductById(int id)
         {
-            db.openConnection();
-            Product? product = null;
+            string sql = @"SELECT id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
+                           FROM products
+                           WHERE id = @id";
 
-            using var cmd = new SqlCommand("SELECT * FROM products WHERE id=@id AND is_active=1", db.getConnecttion());
+            _db.OpenConnection();
+            using var cmd = new SqlCommand(sql, _db.GetConnection());
             cmd.Parameters.AddWithValue("@id", id);
+            using var reader = cmd.ExecuteReader();
 
-            using var r = cmd.ExecuteReader();
-            if (r.Read()) product = MapProduct(r);
+            Product? product = null;
+            if (reader.Read()) product = MapToProduct(reader);
 
-            db.closeConnection();
+            _db.CloseConnection();
             return product;
         }
 
-        // ============================
-        // 3) Lấy sản phẩm liên quan
-        // ============================
-        public List<Product> GetRelated(int excludeId, int categoryId, int limit = 6)
+        // Lấy sản phẩm theo danh mục
+        public List<Product> GetProductsByCategory(int categoryId)
         {
-            db.openConnection();
             List<Product> list = new();
+            string sql = @"SELECT id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
+                           FROM products
+                           WHERE category_id = @cat
+                           ORDER BY created_at DESC";
 
-            using var cmd = new SqlCommand(@"
-                SELECT TOP(@limit) * 
-                FROM products 
-                WHERE category_id=@cid AND id<>@id AND is_active=1
-                ORDER BY created_at DESC", db.getConnecttion());
+            _db.OpenConnection();
+            using var cmd = new SqlCommand(sql, _db.GetConnection());
+            cmd.Parameters.AddWithValue("@cat", categoryId);
+            using var reader = cmd.ExecuteReader();
 
-            cmd.Parameters.AddWithValue("@limit", limit);
-            cmd.Parameters.AddWithValue("@cid", categoryId);
-            cmd.Parameters.AddWithValue("@id", excludeId);
+            while (reader.Read()) list.Add(MapToProduct(reader));
 
-            using var r = cmd.ExecuteReader();
-            while (r.Read()) list.Add(MapProduct(r));
-
-            db.closeConnection();
+            _db.CloseConnection();
             return list;
         }
 
-        // ============================
-        // 4) Lấy sản phẩm nổi bật (dùng cho trang chủ)
-        // ============================
-        public List<Product> GetFeatured(int limit = 8)
+        // =========================
+        // FEATURED PRODUCTS
+        // =========================
+        public List<Product> GetFeaturedProducts(int limit = 4)
         {
-            db.openConnection();
             List<Product> list = new();
 
-            using var cmd = new SqlCommand(@"
-                SELECT TOP(@limit) * 
-                FROM products 
-                WHERE is_active=1
-                ORDER BY created_at DESC",
-                db.getConnecttion());
+            string sql = @$"
+                SELECT TOP ({limit}) id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
+                FROM products
+                WHERE is_active = 1
+                ORDER BY created_at DESC";
 
-            cmd.Parameters.AddWithValue("@limit", limit);
+            _db.OpenConnection();
+            using var cmd = new SqlCommand(sql, _db.GetConnection());
+            using var reader = cmd.ExecuteReader();
 
-            using var r = cmd.ExecuteReader();
-            while (r.Read()) list.Add(MapProduct(r));
+            while (reader.Read()) list.Add(MapToProduct(reader));
 
-            db.closeConnection();
+            _db.CloseConnection();
             return list;
         }
 
-        // ============================
-        // 5) Lấy sản phẩm bán chạy (dựa vào order_items)
-        // ============================
-        public List<Product> GetBestSeller(int limit = 8)
+        // =========================
+        // BEST SELLER PRODUCTS
+        // =========================
+        public List<Product> GetBestSellerProducts(int limit = 4)
         {
-            db.openConnection();
             List<Product> list = new();
 
-            using var cmd = new SqlCommand(@"
-                SELECT TOP(@limit) p.*, SUM(oi.quantity) AS total_sold
-                FROM order_items oi
-                JOIN products p ON p.id = oi.product_id
+            string sql = @$"
+                SELECT TOP ({limit}) p.id, p.category_id, p.name, p.description, p.price, 
+                       p.stock_quantity, p.image_url, p.is_active, p.created_at
+                FROM products p
+                JOIN order_items oi ON oi.product_id = p.id
                 GROUP BY p.id, p.category_id, p.name, p.description, p.price, 
                          p.stock_quantity, p.image_url, p.is_active, p.created_at
-                ORDER BY total_sold DESC",
-                db.getConnecttion());
+                ORDER BY SUM(oi.quantity) DESC";
 
-            cmd.Parameters.AddWithValue("@limit", limit);
+            _db.OpenConnection();
+            using var cmd = new SqlCommand(sql, _db.GetConnection());
+            using var reader = cmd.ExecuteReader();
 
-            using var r = cmd.ExecuteReader();
-            while (r.Read()) list.Add(MapProduct(r));
+            while (reader.Read()) list.Add(MapToProduct(reader));
 
-            db.closeConnection();
+            _db.CloseConnection();
             return list;
         }
 
-        // ============================
-        // 6) Đếm số sản phẩm (dùng cho phân trang)
-        // ============================
-        public int CountProducts(int? categoryId)
+        // =========================
+        // RELATED PRODUCTS
+        // =========================
+        public List<Product> GetRelatedProducts(int productId, int limit = 4)
         {
-            db.openConnection();
+            List<Product> list = new();
 
-            string query = categoryId == null ?
-                "SELECT COUNT(*) FROM products WHERE is_active=1" :
-                "SELECT COUNT(*) FROM products WHERE is_active=1 AND category_id=@cid";
+            string sql = @$"
+                SELECT TOP ({limit}) id, category_id, name, description, price,
+                       stock_quantity, image_url, is_active, created_at
+                FROM products
+                WHERE category_id = (SELECT category_id FROM products WHERE id = @id)
+                  AND id <> @id
+                ORDER BY NEWID()";
 
-            using var cmd = new SqlCommand(query, db.getConnecttion());
+            _db.OpenConnection();
+            using var cmd = new SqlCommand(sql, _db.GetConnection());
+            cmd.Parameters.AddWithValue("@id", productId);
+            using var reader = cmd.ExecuteReader();
 
-            if (categoryId != null)
-                cmd.Parameters.AddWithValue("@cid", categoryId);
+            while (reader.Read()) list.Add(MapToProduct(reader));
 
+            _db.CloseConnection();
+            return list;
+        }
+
+        // =========================
+        // SEARCH
+        // =========================
+        public List<Product> SearchProducts(string keyword)
+        {
+            List<Product> list = new();
+
+            string sql = @"SELECT id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
+                           FROM products
+                           WHERE name LIKE '%' + @kw + '%'";
+
+            _db.OpenConnection();
+            using var cmd = new SqlCommand(sql, _db.GetConnection());
+            cmd.Parameters.AddWithValue("@kw", keyword);
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read()) list.Add(MapToProduct(reader));
+
+            _db.CloseConnection();
+            return list;
+        }
+
+        // =========================
+        // PAGINATION
+        // =========================
+        public List<Product> GetProducts_Pagination(int page, int pageSize)
+        {
+            List<Product> list = new();
+            int skip = (page - 1) * pageSize;
+
+            string sql = @$"
+                SELECT id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
+                FROM products
+                ORDER BY created_at DESC
+                OFFSET {skip} ROWS FETCH NEXT {pageSize} ROWS ONLY";
+
+            _db.OpenConnection();
+            using var cmd = new SqlCommand(sql, _db.GetConnection());
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read()) list.Add(MapToProduct(reader));
+
+            _db.CloseConnection();
+            return list;
+        }
+
+        public int GetTotalProducts()
+        {
+            string sql = "SELECT COUNT(*) FROM products";
+
+            _db.OpenConnection();
+            using var cmd = new SqlCommand(sql, _db.GetConnection());
             int total = (int)cmd.ExecuteScalar();
-            db.closeConnection();
+            _db.CloseConnection();
 
             return total;
         }
 
-        // ============================
-        // 7) Lấy danh sách theo phân trang + filter + sort
-        // ============================
-        public List<Product> GetPaged(
-            int pageIndex,
-            int pageSize,
-            int? categoryId,
-            string sort)
+        // =========================
+        // MAPPING FUNCTION
+        // =========================
+        private Product MapToProduct(SqlDataReader r)
         {
-            db.openConnection();
-            List<Product> list = new();
-
-            string orderBy = sort switch
+            return new Product
             {
-                "price_asc" => "price ASC",
-                "price_desc" => "price DESC",
-                "name_asc" => "name ASC",
-                "name_desc" => "name DESC",
-                _ => "created_at DESC"
+                Id = r.GetInt32(0),
+                CategoryId = r.IsDBNull(1) ? null : r.GetInt32(1),
+                Name = r.GetString(2),
+                Description = r.IsDBNull(3) ? null : r.GetString(3),
+                Price = r.GetDecimal(4),
+                StockQuantity = r.IsDBNull(5) ? 0 : r.GetInt32(5),
+                ImageUrl = r.IsDBNull(6) ? null : r.GetString(6),
+                IsActive = r.GetBoolean(7),
+                CreatedAt = r.GetDateTime(8)
             };
-
-            string baseQuery = @"
-                SELECT * FROM (
-                    SELECT 
-                        ROW_NUMBER() OVER (ORDER BY {0}) AS RowNum,
-                        *
-                    FROM products
-                    WHERE is_active=1 {1}
-                ) AS T
-                WHERE RowNum BETWEEN @start AND @end";
-
-            string filter = categoryId != null ? "AND category_id=@cid" : "";
-
-            string finalQuery = string.Format(baseQuery, orderBy, filter);
-
-            using var cmd = new SqlCommand(finalQuery, db.getConnecttion());
-
-            cmd.Parameters.AddWithValue("@start", (pageIndex - 1) * pageSize + 1);
-            cmd.Parameters.AddWithValue("@end", pageIndex * pageSize);
-
-            if (categoryId != null)
-                cmd.Parameters.AddWithValue("@cid", categoryId);
-
-            using var r = cmd.ExecuteReader();
-            while (r.Read()) list.Add(MapProduct(r));
-
-            db.closeConnection();
-            return list;
-        }
-
-        // ============================
-        // 8) Tìm kiếm sản phẩm
-        // ============================
-        public List<Product> Search(string keyword)
-        {
-            db.openConnection();
-            List<Product> list = new();
-
-            using var cmd = new SqlCommand(
-                "SELECT * FROM products WHERE name LIKE @kw AND is_active=1",
-                db.getConnecttion());
-
-            cmd.Parameters.AddWithValue("@kw", "%" + keyword + "%");
-
-            using var r = cmd.ExecuteReader();
-            while (r.Read()) list.Add(MapProduct(r));
-
-            db.closeConnection();
-            return list;
         }
     }
 }

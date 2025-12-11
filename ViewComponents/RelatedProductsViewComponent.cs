@@ -12,12 +12,12 @@ namespace WebDT.ViewComponents
         {
             int limitProduct = limit ?? 4;
 
-            var mainProduct = _productDal.GetById(productId);
+            var mainProduct = _productDal.GetProductById(productId);
             if (mainProduct == null)
                 return View("RelatedProducts", new List<Product>());
 
-            // Lấy các sản phẩm cùng danh mục
-            var related = _productDal.GetRelated(productId, mainProduct.CategoryId, limitProduct);
+
+            var related = _productDal.GetRelatedProducts(productId, limitProduct);
 
             return View("RelatedProducts", related);
         }

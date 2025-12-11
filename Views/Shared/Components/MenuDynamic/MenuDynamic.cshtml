@@ -1,0 +1,30 @@
+﻿@model List<WebDT.Models.NavbarItem>
+
+<ul class="navbar-nav">
+    @foreach (var item in Model)
+    {
+        if (item.SubItems != null && item.SubItems.Count > 0)
+        {
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="@item.MenuUrl" data-bs-toggle="dropdown">
+                    @item.Title
+                </a>
+
+                <ul class="dropdown-menu">
+                    @foreach (var sub in item.SubItems)
+                    {
+                        <li>
+                            <a class="dropdown-item" href="@sub.MenuUrl">@sub.Title</a>
+                        </li>
+                    }
+                </ul>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item">
+                <a class="nav-link" href="@item.MenuUrl">@item.Title</a>
+            </li>
+        }
+    }
+</ul>

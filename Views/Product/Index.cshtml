@@ -1,0 +1,32 @@
+﻿@model List<WebDT.Models.Product>
+
+<h2>Danh sách sản phẩm</h2>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tên</th>
+            <th>Danh mục</th>
+            <th>Giá</th>
+            <th>Tồn kho</th>
+            <th>Chi tiết</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Id</td>
+                <td>@p.Name</td>
+                <td>@p.CategoryId</td>
+                <td>@p.Price.ToString("N0") đ</td>
+                <td>@p.StockQuantity</td>
+                <td>
+                    <a href="/Product/Detail/@p.Id">Xem</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

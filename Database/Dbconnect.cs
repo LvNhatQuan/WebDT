@@ -4,32 +4,42 @@ namespace WebDT.Database
 {
     public class DbConnect
     {
-        // Kết nối SQL Server (giữ nguyên đúng connection string của bạn)
-        private readonly SqlConnection _connection =
-            new SqlConnection("Data Source=NhatQuan\\SQLEXPRESS;Initial Catalog=DT;Integrated Security=True;TrustServerCertificate=False;Encrypt=false");
+        SqlConnection connect = new SqlConnection(
+            "Data Source=NhatQuan\\SQLEXPRESS;Initial Catalog=DT;Integrated Security=True;TrustServerCertificate=False;Encrypt=false"
+        );
 
-        // Lấy connection
+        // === HÀM GỐC CỦA BẠN (KHÔNG XOÁ) ===
         public SqlConnection getConnecttion()
         {
-            return _connection;
+            return connect;
         }
 
-        // Mở kết nối
         public void openConnection()
         {
-            if (_connection.State == System.Data.ConnectionState.Closed)
-            {
-                _connection.Open();
-            }
+            if (connect.State == System.Data.ConnectionState.Closed)
+                connect.Open();
         }
 
-        // Đóng kết nối
         public void closeConnection()
         {
-            if (_connection.State == System.Data.ConnectionState.Open)
-            {
-                _connection.Close();
-            }
+            if (connect.State == System.Data.ConnectionState.Open)
+                connect.Close();
+        }
+
+        // === HÀM ALIAS MỚI THÊM VÀO CHO DAL ===
+        public SqlConnection GetConnection()
+        {
+            return getConnecttion();
+        }
+
+        public void OpenConnection()
+        {
+            openConnection();
+        }
+
+        public void CloseConnection()
+        {
+            closeConnection();
         }
     }
 }

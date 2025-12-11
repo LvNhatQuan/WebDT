@@ -1,0 +1,34 @@
+﻿@model List<WebDT.Models.Product>
+
+<h3>Featured Products (Test View)</h3>
+
+@if (Model == null || !Model.Any())
+{
+    <p>No featured products found.</p>
+}
+else
+{
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Image</th>
+        </tr>
+
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Id</td>
+                <td>@p.Name</td>
+                <td>@p.Price.ToString("N0") đ</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(p.ImageUrl))
+                    {
+                        <img src="/images/@p.ImageUrl" width="60" />
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+}

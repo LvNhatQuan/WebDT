@@ -9,11 +9,11 @@ namespace WebDT.Controllers
     {
         private readonly ProductDAL _productDAL = new ProductDAL();
         private readonly CategoryDAL _categoryDAL = new CategoryDAL();
+
         public IActionResult Index()
         {
-
-            ViewBag.FeaturedProducts = _productDAL.GetFeatured(8);
-            ViewBag.BestSellerProducts = _productDAL.GetBestSeller(8);
+            ViewBag.FeaturedProducts = _productDAL.GetFeaturedProducts(8);
+            ViewBag.BestSellerProducts = _productDAL.GetBestSellerProducts(8);
             ViewBag.Categories = _categoryDAL.GetAllWithCount();
 
             return View();

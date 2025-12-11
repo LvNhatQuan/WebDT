@@ -11,7 +11,8 @@ namespace WebDT.ViewComponents
         public IViewComponentResult Invoke(int? limit)
         {
             int limitProduct = limit ?? 4;
-            var featuredProducts = _productDal.GetFeatured(limitProduct);
+
+            var featuredProducts = _productDal.GetFeaturedProducts(limitProduct);
 
             return View("FeatureProduct", featuredProducts);
         }
