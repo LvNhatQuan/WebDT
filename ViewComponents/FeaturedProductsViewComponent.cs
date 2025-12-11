@@ -2,7 +2,7 @@
 using WebDT.DAL;
 using WebDT.Models;
 
-namespace WebD_T.ViewComponents
+namespace WebDT.ViewComponents
 {
     public class FeaturedProductsViewComponent : ViewComponent
     {
@@ -10,10 +10,9 @@ namespace WebD_T.ViewComponents
 
         public IViewComponentResult Invoke(int? limit)
         {
-            int limitProduct = limit ?? 4; // nếu không truyền, mặc định lấy 4
-            List<Product> featuredProducts = _productDal.GetFeaturedProducts(limitProduct);
+            int limitProduct = limit ?? 4;
+            var featuredProducts = _productDal.GetFeatured(limitProduct);
 
-            // View: Views/Shared/Components/FeaturedProducts/FeatureProduct.cshtml
             return View("FeatureProduct", featuredProducts);
         }
     }

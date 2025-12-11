@@ -2,7 +2,7 @@
 using WebDT.DAL;
 using WebDT.Models;
 
-namespace WebD_T.ViewComponents
+namespace WebDT.ViewComponents
 {
     public class MenuCategoryViewComponent : ViewComponent
     {

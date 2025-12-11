@@ -1,8 +1,8 @@
 ﻿using Microsoft.Data.SqlClient;
-using WebD_T.Models;
+using WebDT.Models;
 using WebDT.Database;
 
-namespace WebD_T.Areas.Admin.DAL
+namespace WebDT.Areas.Admin.DAL
 {
     public class UserAdminDAL
     {

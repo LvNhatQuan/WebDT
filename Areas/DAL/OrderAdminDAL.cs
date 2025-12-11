@@ -1,8 +1,8 @@
 ﻿using Microsoft.Data.SqlClient;
 using WebDT.Database;
-using WebD_T.Areas.Admin.Models;
+using WebDT.Areas.Admin.Models;
 
-namespace WebD_T.Areas.Admin.DAL
+namespace WebDT.Areas.Admin.DAL
 {
     public class OrderAdminDAL
     {

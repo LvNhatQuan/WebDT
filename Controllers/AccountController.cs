@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using WebD_T.DAL;
-using WebD_T.Models;
+using WebDT.DAL;
+using WebDT.Models;
 
-namespace WebD_T.Controllers
+namespace WebDT.Controllers
 {
     public class AccountController : Controller
     {

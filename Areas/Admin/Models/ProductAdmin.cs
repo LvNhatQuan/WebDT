@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebD_T.Areas.Admin.Models
+namespace WebDT.Areas.Admin.Models
 {
     public class ProductAdmin
     {

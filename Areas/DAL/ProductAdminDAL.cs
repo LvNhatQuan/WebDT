@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Data.SqlClient;
-using WebD_T.Areas.Admin.Models;
+using WebDT.Areas.Admin.Models;
 using WebDT.Database; 
 
-namespace WebD_T.Areas.Admin.DAL
+namespace WebDT.Areas.Admin.DAL
 {
     public class ProductAdminDAL
     {

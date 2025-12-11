@@ -1,29 +1,35 @@
 ﻿using Microsoft.Data.SqlClient;
-namespace WebDT.Database;
 
-public class DbConnect
+namespace WebDT.Database
 {
-    //to create connection
-    SqlConnection connect = new SqlConnection("Data Source=NhatQuan\\SQLEXPRESS;Initial Catalog=DT;Integrated Security=True;TrustServerCertificate=False;Encrypt=false");
-    //to get connection
-    public SqlConnection getConnecttion()
+    public class DbConnect
     {
-        return connect;
-    }
-    //create a function to Open connection
-    public void openConnection()
-    {
-        if (connect.State == System.Data.ConnectionState.Closed)
+        // Kết nối SQL Server (giữ nguyên đúng connection string của bạn)
+        private readonly SqlConnection _connection =
+            new SqlConnection("Data Source=NhatQuan\\SQLEXPRESS;Initial Catalog=DT;Integrated Security=True;TrustServerCertificate=False;Encrypt=false");
+
+        // Lấy connection
+        public SqlConnection getConnecttion()
         {
-            connect.Open();
+            return _connection;
         }
-    }
-    //create a function to Close connection
-    public void closeConnection()
-    {
-        if (connect.State == System.Data.ConnectionState.Open)
+
+        // Mở kết nối
+        public void openConnection()
         {
-            connect.Close();
+            if (_connection.State == System.Data.ConnectionState.Closed)
+            {
+                _connection.Open();
+            }
+        }
+
+        // Đóng kết nối
+        public void closeConnection()
+        {
+            if (_connection.State == System.Data.ConnectionState.Open)
+            {
+                _connection.Close();
+            }
         }
     }
 }

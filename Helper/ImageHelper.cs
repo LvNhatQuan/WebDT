@@ -1,4 +1,4 @@
-﻿namespace WebD_T.Helper
+﻿namespace WebDT.Helper
 {
     public class ImageHelper
     {

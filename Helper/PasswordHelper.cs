@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace WebD_T.Helper
+namespace WebDT.Helper
 {
     public static class PasswordHelper
     {

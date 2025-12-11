@@ -1,106 +1,150 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using WebD_T.DAL;
 using WebDT.DAL;
 using WebDT.Database;
 using WebDT.Models;
 
-namespace WebD_T.Controllers
+namespace WebDT.Controllers
 {
     public class CartController : Controller
     {
-        private readonly ProductDAL _productDAL = new ProductDAL();
+        private readonly ProductDAL _productDal = new ProductDAL();
         private readonly UserDAL _userDal = new UserDAL();
-        private readonly DbConnect connect = new DbConnect();
+        private readonly DbConnect _db = new DbConnect();
 
+        // =========================
+        // 1. XEM GIỎ HÀNG
+        // =========================
         public IActionResult Index()
         {
             int userId = GetUserId();
-            var items = GetCartItems(userId);
+            List<CartItem> items = GetCartItems(userId);
             return View(items);
         }
 
+        // =========================
+        // 2. THÊM SẢN PHẨM VÀO GIỎ
+        // =========================
         public IActionResult Add(int productId, int qty = 1)
         {
             int userId = GetUserId();
 
-            connect.openConnection();
-            using var cmd = new SqlCommand(@"
+            _db.openConnection();
+
+            using (var cmd = new SqlCommand(@"
                 IF EXISTS(SELECT 1 FROM cart WHERE customerId=@uid AND productId=@pid)
                     UPDATE cart SET quantity = quantity + @qty
                     WHERE customerId=@uid AND productId=@pid
                 ELSE
                     INSERT INTO cart(customerId, productId, quantity, createAt)
                     VALUES(@uid, @pid, @qty, GETDATE())",
-                connect.getConnecttion());
+                _db.getConnecttion()))
+            {
+                cmd.Parameters.AddWithValue("@uid", userId);
+                cmd.Parameters.AddWithValue("@pid", productId);
+                cmd.Parameters.AddWithValue("@qty", qty);
 
-            cmd.Parameters.AddWithValue("@uid", userId);
-            cmd.Parameters.AddWithValue("@pid", productId);
-            cmd.Parameters.AddWithValue("@qty", qty);
+                cmd.ExecuteNonQuery();
+            }
 
-            cmd.ExecuteNonQuery();
-            connect.closeConnection();
+            _db.closeConnection();
 
             return RedirectToAction("Index");
         }
 
+        // =========================
+        // 3. UPDATE SỐ LƯỢNG TRONG GIỎ
+        // =========================
         public IActionResult Update(int id, int qty)
         {
-            connect.openConnection();
-            using var cmd = new SqlCommand("UPDATE cart SET quantity=@qty WHERE id=@id", connect.getConnecttion());
-            cmd.Parameters.AddWithValue("@qty", qty);
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.ExecuteNonQuery();
-            connect.closeConnection();
+            _db.openConnection();
+
+            using (var cmd = new SqlCommand(
+                "UPDATE cart SET quantity=@qty WHERE id=@id",
+                _db.getConnecttion()))
+            {
+                cmd.Parameters.AddWithValue("@qty", qty);
+                cmd.Parameters.AddWithValue("@id", id);
+                cmd.ExecuteNonQuery();
+            }
+
+            _db.closeConnection();
 
             return RedirectToAction("Index");
         }
 
+        // =========================
+        // 4. XÓA SẢN PHẨM KHỎI GIỎ
+        // =========================
         public IActionResult Delete(int id)
         {
-            connect.openConnection();
-            using var cmd = new SqlCommand("DELETE FROM cart WHERE id=@id", connect.getConnecttion());
-            cmd.Parameters.AddWithValue("@id", id);
-            cmd.ExecuteNonQuery();
-            connect.closeConnection();
+            _db.openConnection();
+
+            using (var cmd = new SqlCommand(
+                "DELETE FROM cart WHERE id=@id",
+                _db.getConnecttion()))
+            {
+                cmd.Parameters.AddWithValue("@id", id);
+                cmd.ExecuteNonQuery();
+            }
+
+            _db.closeConnection();
 
             return RedirectToAction("Index");
         }
 
+        // =========================
+        // HÀM PHỤ — LẤY USER ID
+        // =========================
         private int GetUserId()
         {
-            var email = User.Identity?.Name;
+            string email = User.Identity?.Name;
             var user = _userDal.GetUserByEmail(email);
             return user.Id;
         }
 
+        // =========================
+        // HÀM PHỤ — LẤY GIỎ HÀNG
+        // =========================
         private List<CartItem> GetCartItems(int userId)
         {
             var list = new List<CartItem>();
 
-            connect.openConnection();
-            using var cmd = new SqlCommand(@"
-                SELECT c.id AS CartId, p.id AS ProductId, p.name, p.price, p.image_url, c.quantity
-                FROM cart c 
+            _db.openConnection();
+
+            using (var cmd = new SqlCommand(@"
+                SELECT 
+                    c.id AS CartId,
+                    p.id AS ProductId,
+                    p.name,
+                    p.price,
+                    p.image_url,
+                    c.quantity
+                FROM cart c
                 JOIN products p ON p.id = c.productId
-                WHERE c.customerId = @uid", connect.getConnecttion());
-
-            cmd.Parameters.AddWithValue("@uid", userId);
-
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+                WHERE c.customerId = @uid",
+                _db.getConnecttion()))
             {
-                list.Add(new CartItem
+                cmd.Parameters.AddWithValue("@uid", userId);
+
+                using (var reader = cmd.ExecuteReader())
                 {
-                    IdProduct = (int)reader["ProductId"],
-                    Name = reader["name"].ToString(),
-                    Img = reader["image_url"].ToString(),
-                    Price = Convert.ToInt32(reader["price"]),
-                    Quantity = Convert.ToInt32(reader["quantity"])
-                });
+                    while (reader.Read())
+                    {
+                        list.Add(new CartItem
+                        {
+                            IdProduct = (int)reader["ProductId"],
+                            Name = reader["name"].ToString(),
+                            Img = reader["image_url"].ToString(),
+                            Price = Convert.ToInt32(reader["price"]),
+                            Quantity = Convert.ToInt32(reader["quantity"])
+                        });
+                    }
+                }
             }
 
-            connect.closeConnection();
+            _db.closeConnection();
+
             return list;
         }
     }

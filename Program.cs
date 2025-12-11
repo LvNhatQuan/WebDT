@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using WebD_T.DAL;
+using WebDT.DAL;
 
 var builder = WebApplication.CreateBuilder(args);
 

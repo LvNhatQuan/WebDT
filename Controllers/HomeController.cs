@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using WebD_T.Models;
+using WebDT.Models;
 using WebDT.DAL;
 
 namespace WebDT.Controllers
@@ -12,8 +12,8 @@ namespace WebDT.Controllers
         public IActionResult Index()
         {
 
-            ViewBag.FeaturedProducts = _productDAL.GetFeaturedProducts(8);
-            ViewBag.BestSellerProducts = _productDAL.GetBestSellerProducts(8);
+            ViewBag.FeaturedProducts = _productDAL.GetFeatured(8);
+            ViewBag.BestSellerProducts = _productDAL.GetBestSeller(8);
             ViewBag.Categories = _categoryDAL.GetAllWithCount();
 
             return View();

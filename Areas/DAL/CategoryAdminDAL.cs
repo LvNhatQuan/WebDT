@@ -1,8 +1,8 @@
 ﻿using Microsoft.Data.SqlClient;
-using WebD_T.Areas.Admin.Models;
+using WebDT.Areas.Admin.Models;
 using WebDT.Database;
 
-namespace WebD_T.Areas.DAL
+namespace WebDT.Areas.DAL
 {
     public class CategoryAdminDAL
     {

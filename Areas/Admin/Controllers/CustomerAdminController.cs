@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using WebD_T.Areas.Admin.DAL;
+using WebDT.Areas.Admin.DAL;
 
-namespace WebD_T.Areas.Admin.Controllers
+namespace WebDT.Areas.Admin.Controllers
 {
     [Area("Admin")]
     [Authorize(Roles = "admin")]

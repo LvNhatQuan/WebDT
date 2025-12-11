@@ -1,4 +1,4 @@
-﻿namespace WebD_T.Models
+﻿namespace WebDT.Models
 {
     public class User
     {

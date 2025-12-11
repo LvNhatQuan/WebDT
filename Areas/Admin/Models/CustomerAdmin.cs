@@ -1,4 +1,4 @@
-﻿namespace WebD_T.Areas.Admin.Models
+﻿namespace WebDT.Areas.Admin.Models
 {
     public class CustomerAdmin
     {

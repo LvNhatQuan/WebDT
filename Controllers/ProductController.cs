@@ -2,31 +2,25 @@
 using WebDT.DAL;
 using WebDT.Models;
 
-namespace WebD_T.Controllers
+namespace WebDT.Controllers
 {
     public class ProductController : Controller
     {
         private readonly ProductDAL _productDAL = new ProductDAL();
+        private readonly CategoryDAL _categoryDAL = new CategoryDAL();
 
-        public IActionResult Index(int? categoryId, int page = 1, string sortOrder = "")
+        public IActionResult Index(int categoryId, int page = 1, string sortOrder = "")
         {
-            var currentUrl = HttpContext.Request.Path + HttpContext.Request.QueryString;
-            ViewData["CurrentUrl"] = currentUrl;
-
             int pageSize = 6;
 
-            ViewData["CategoryId"] = categoryId;
-            ViewData["SortColumn"] = sortOrder;
-            ViewBag.Categories = new CategoryDAL().GetAllWithCount();
+            ViewBag.Categories = _categoryDAL.GetAllWithCount();
 
-            List<Product> products = _productDAL.GetProducts_Pagination(categoryId, page, pageSize, sortOrder);
+            var products = _productDAL.GetPaged(categoryId, page, pageSize, sortOrder);
+            int totalProducts = _productDAL.CountProducts(categoryId);
 
-            int rowCount = _productDAL.GetTotalProducts(categoryId);
+            int maxPage = (int)Math.Ceiling((double)totalProducts / pageSize);
 
-            double pageCount = (double)rowCount / pageSize;
-            int maxPage = (int)Math.Ceiling(pageCount);
-
-            ProductPagination model = new ProductPagination
+            var model = new ProductPagination
             {
                 Products = products,
                 CurrentPageIndex = page,
@@ -38,43 +32,34 @@ namespace WebD_T.Controllers
 
         public IActionResult Detail(int id)
         {
-            var product = _productDAL.GetProductById(id);
+            var product = _productDAL.GetById(id);
             if (product == null) return NotFound();
 
-            ViewBag.RelatedProducts = _productDAL.GetRelatedProducts(id, 6);
-
+            ViewBag.RelatedProducts = _productDAL.GetRelated(id, 6);
             return View(product);
         }
 
         public IActionResult Search(string keyword)
         {
             if (string.IsNullOrWhiteSpace(keyword))
-            {
-                ViewBag.Message = "Vui lòng nhập từ khóa để tìm kiếm.";
                 return View(new List<Product>());
-            }
 
-            List<Product> products = _productDAL.SearchProducts(keyword);
-            ViewData["SearchKeyword"] = keyword;
+            var results = _productDAL.Search(keyword);
+            ViewBag.SearchKeyword = keyword;
 
-            return View(products);
-        }
-
-        public IActionResult Category(int id, int page = 1, string sortOrder = "")
-        {
-            return RedirectToAction("Index", new { categoryId = id, page, sortOrder });
+            return View(results);
         }
 
         public IActionResult Featured()
         {
-            var featuredProducts = _productDAL.GetFeaturedProducts(8);
-            return View(featuredProducts);
+            var products = _productDAL.GetFeatured(8);
+            return View(products);
         }
 
         public IActionResult BestSellers()
         {
-            var bestSellers = _productDAL.GetBestSellerProducts(10);
-            return View(bestSellers);
+            var products = _productDAL.GetBestSeller(10);
+            return View(products);
         }
     }
 }

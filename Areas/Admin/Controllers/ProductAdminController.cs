@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using WebD_T.Areas.Admin.DAL;
-using WebD_T.Areas.Admin.Models;
-using WebD_T.Areas.DAL;
-using WebD_T.Helper;
+using WebDT.Areas.Admin.DAL;
+using WebDT.Areas.Admin.Models;
+using WebDT.Areas.DAL;
+using WebDT.Helper;
 
-namespace WebD_T.Areas.Admin.Controllers
+namespace WebDT.Areas.Admin.Controllers
 {
     [Area("Admin")]
     [Authorize(Roles = "admin")]

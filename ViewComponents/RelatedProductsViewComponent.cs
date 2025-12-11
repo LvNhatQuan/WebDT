@@ -2,7 +2,7 @@
 using WebDT.DAL;
 using WebDT.Models;
 
-namespace WebD_T.ViewComponents
+namespace WebDT.ViewComponents
 {
     public class RelatedProductsViewComponent : ViewComponent
     {
@@ -11,10 +11,15 @@ namespace WebD_T.ViewComponents
         public IViewComponentResult Invoke(int productId, int? limit)
         {
             int limitProduct = limit ?? 4;
-            List<Product> relatedProducts = _productDal.GetRelatedProducts(productId, limitProduct);
 
-            // View: Views/Shared/Components/RelatedProducts/RelatedProducts.cshtml
-            return View("RelatedProducts", relatedProducts);
+            var mainProduct = _productDal.GetById(productId);
+            if (mainProduct == null)
+                return View("RelatedProducts", new List<Product>());
+
+            // Lấy các sản phẩm cùng danh mục
+            var related = _productDal.GetRelated(productId, mainProduct.CategoryId, limitProduct);
+
+            return View("RelatedProducts", related);
         }
     }
 }
