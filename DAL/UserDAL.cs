@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-using WebDT.Models;
 using WebDT.Database;
 using WebDT.Models;
 
@@ -9,27 +8,25 @@ namespace WebDT.DAL
     {
         private readonly DbConnect db = new DbConnect();
 
-        // ============================
-        // MAP USER TỪ READER
-        // ============================
         private User MapUser(SqlDataReader r)
         {
             return new User
             {
                 Id = Convert.ToInt32(r["id"]),
-                Username = r["username"].ToString(),
-                Email = r["email"].ToString(),
-                Password = r["password"].ToString(),
-                FullName = r["full_name"].ToString(),
-                PhoneNumber = r["phone_number"].ToString(),
-                Role = r["role"].ToString(),
-                IsLocked = false
+                Username = r["username"]?.ToString() ?? "",
+                Email = r["email"]?.ToString() ?? "",
+                Password = r["password"]?.ToString() ?? "",
+                FullName = r["full_name"]?.ToString() ?? "",
+                PhoneNumber = r["phone_number"]?.ToString() ?? "",
+                Role = r["role"]?.ToString() ?? "customer",
+                Address = r["address"]?.ToString() ?? "",
+                Avatar = r["avatar"]?.ToString() ?? "",
+                IsActive = r["is_active"] != DBNull.Value && Convert.ToBoolean(r["is_active"]),
+                IsLocked = r["is_locked"] != DBNull.Value && Convert.ToBoolean(r["is_locked"]),
+                CreatedAt = r["created_at"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(r["created_at"])
             };
         }
 
-        // ============================
-        // LẤY USER THEO EMAIL (LOGIN)
-        // ============================
         public User? GetUserByEmail(string email)
         {
             db.openConnection();
@@ -49,9 +46,6 @@ namespace WebDT.DAL
             return user;
         }
 
-        // ============================
-        // LẤY USER THEO USERNAME
-        // ============================
         public User? GetUserByUsername(string username)
         {
             db.openConnection();
@@ -71,9 +65,6 @@ namespace WebDT.DAL
             return user;
         }
 
-        // ============================
-        // LẤY USER THEO ID
-        // ============================
         public User? GetUserById(int id)
         {
             db.openConnection();
@@ -93,24 +84,23 @@ namespace WebDT.DAL
             return user;
         }
 
-        // ============================
-        // TẠO USER MỚI (REGISTER)
-        // ============================
         public bool CreateUser(User u)
         {
             db.openConnection();
 
             using (var cmd = new SqlCommand(@"
-                INSERT INTO users (username, email, password, full_name, phone_number, role)
-                VALUES (@Username, @Email, @Password, @FullName, @Phone, @Role)",
+INSERT INTO users (username, email, password, full_name, phone_number, role, address, avatar, is_active, is_locked, created_at)
+VALUES (@Username, @Email, @Password, @FullName, @Phone, @Role, @Address, @Avatar, 1, 0, GETDATE())",
                 db.getConnecttion()))
             {
-                cmd.Parameters.AddWithValue("@Username", u.Username);
-                cmd.Parameters.AddWithValue("@Email", u.Email);
-                cmd.Parameters.AddWithValue("@Password", u.Password); // chưa hash
-                cmd.Parameters.AddWithValue("@FullName", u.FullName);
-                cmd.Parameters.AddWithValue("@Phone", u.PhoneNumber);
-                cmd.Parameters.AddWithValue("@Role", u.Role);
+                cmd.Parameters.AddWithValue("@Username", u.Username ?? "");
+                cmd.Parameters.AddWithValue("@Email", u.Email ?? "");
+                cmd.Parameters.AddWithValue("@Password", u.Password ?? ""); // nên hash nếu có lib
+                cmd.Parameters.AddWithValue("@FullName", u.FullName ?? "");
+                cmd.Parameters.AddWithValue("@Phone", u.PhoneNumber ?? "");
+                cmd.Parameters.AddWithValue("@Role", u.Role ?? "customer");
+                cmd.Parameters.AddWithValue("@Address", u.Address ?? "");
+                cmd.Parameters.AddWithValue("@Avatar", u.Avatar ?? "");
 
                 int result = cmd.ExecuteNonQuery();
                 db.closeConnection();
@@ -118,25 +108,22 @@ namespace WebDT.DAL
             }
         }
 
-        // ============================
-        // CẬP NHẬT THÔNG TIN PROFILE
-        // ============================
         public bool UpdateProfile(User u)
         {
             db.openConnection();
 
             using (var cmd = new SqlCommand(@"
-                UPDATE users SET
-                    full_name=@FullName,
-                    email=@Email,
-                    phone_number=@Phone
-                WHERE id=@Id",
+UPDATE users SET
+    full_name=@FullName,
+    email=@Email,
+    phone_number=@Phone
+WHERE id=@Id",
                 db.getConnecttion()))
             {
                 cmd.Parameters.AddWithValue("@Id", u.Id);
-                cmd.Parameters.AddWithValue("@FullName", u.FullName);
-                cmd.Parameters.AddWithValue("@Email", u.Email);
-                cmd.Parameters.AddWithValue("@Phone", u.PhoneNumber);
+                cmd.Parameters.AddWithValue("@FullName", u.FullName ?? "");
+                cmd.Parameters.AddWithValue("@Email", u.Email ?? "");
+                cmd.Parameters.AddWithValue("@Phone", u.PhoneNumber ?? "");
 
                 int result = cmd.ExecuteNonQuery();
                 db.closeConnection();

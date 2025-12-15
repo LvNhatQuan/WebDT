@@ -11,9 +11,13 @@ namespace WebDT.DAL
         {
             db.openConnection();
 
-            using var cmd = new SqlCommand(
-                "SELECT discount_value FROM coupons WHERE id=@id AND is_active=1",
-                db.getConnecttion());
+            using var cmd = new SqlCommand(@"
+SELECT discount_value
+FROM coupons
+WHERE id=@id
+  AND is_active=1
+  AND GETDATE() BETWEEN start_date AND end_date
+", db.getConnecttion());
 
             cmd.Parameters.AddWithValue("@id", couponId);
 

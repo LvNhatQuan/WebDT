@@ -8,20 +8,15 @@ namespace WebDT.DAL
     {
         private readonly DbConnect db = new DbConnect();
 
-        // =====================================================
-        // CREATE ORDER + ORDER ITEMS (TRANSACTION)
-        // =====================================================
         public int CreateOrder(
             int userId,
-            int? couponId,
             List<CartItem> cart,
             decimal shippingFee,
-            decimal discount,
+            decimal discountAmount,
             string address
         )
         {
-            if (cart == null || cart.Count == 0)
-                return -1;
+            if (cart == null || cart.Count == 0) return -1;
 
             db.openConnection();
             var tran = db.getConnecttion().BeginTransaction();
@@ -29,46 +24,44 @@ namespace WebDT.DAL
             try
             {
                 decimal subTotal = cart.Sum(x => x.Total);
-                decimal grandTotal = subTotal + shippingFee - discount;
+                decimal grandTotal = subTotal + shippingFee - discountAmount;
 
-                // 1️⃣ INSERT ORDER
+                // ✅ DB mới: orders KHÔNG có coupon_id
                 string sqlOrder = @"
-                    INSERT INTO orders
-                    (user_id, coupon_id, sub_total, shipping_fee, discount_amount, grand_total, shipping_address, order_date)
-                    OUTPUT INSERTED.id
-                    VALUES
-                    (@uid, @cid, @sub, @ship, @disc, @grand, @addr, GETDATE())";
+INSERT INTO orders
+(user_id, order_date, sub_total, shipping_fee, discount_amount, grand_total, shipping_address, status)
+OUTPUT INSERTED.id
+VALUES
+(@uid, GETDATE(), @sub, @ship, @disc, @grand, @addr, 'pending')";
 
                 int orderId;
                 using (var cmd = new SqlCommand(sqlOrder, db.getConnecttion(), tran))
                 {
                     cmd.Parameters.AddWithValue("@uid", userId);
-                    cmd.Parameters.AddWithValue("@cid", (object)couponId ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@sub", subTotal);
                     cmd.Parameters.AddWithValue("@ship", shippingFee);
-                    cmd.Parameters.AddWithValue("@disc", discount);
+                    cmd.Parameters.AddWithValue("@disc", discountAmount);
                     cmd.Parameters.AddWithValue("@grand", grandTotal);
                     cmd.Parameters.AddWithValue("@addr", address ?? "");
-
                     orderId = Convert.ToInt32(cmd.ExecuteScalar());
                 }
 
-                // 2️⃣ INSERT ORDER ITEMS
+                // ✅ DB mới: order_items CÓ coupon_id
                 string sqlItem = @"
-                    INSERT INTO order_items
-                    (order_id, product_id, quantity, price, total_price)
-                    VALUES
-                    (@oid, @pid, @qty, @price, @total)";
+INSERT INTO order_items
+(order_id, coupon_id, product_id, quantity, price, total_price)
+VALUES
+(@oid, @cid, @pid, @qty, @price, @total)";
 
                 foreach (var item in cart)
                 {
                     using var cmd = new SqlCommand(sqlItem, db.getConnecttion(), tran);
                     cmd.Parameters.AddWithValue("@oid", orderId);
+                    cmd.Parameters.AddWithValue("@cid", (object?)item.CouponId ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@pid", item.IdProduct);
                     cmd.Parameters.AddWithValue("@qty", item.Quantity);
                     cmd.Parameters.AddWithValue("@price", item.Price);
                     cmd.Parameters.AddWithValue("@total", item.Total);
-
                     cmd.ExecuteNonQuery();
                 }
 
@@ -86,9 +79,6 @@ namespace WebDT.DAL
             }
         }
 
-        // =====================================================
-        // GET ORDER BY ID
-        // =====================================================
         public OrderModel? GetOrderById(int orderId)
         {
             db.openConnection();
@@ -106,16 +96,14 @@ namespace WebDT.DAL
                     order = new OrderModel
                     {
                         Id = Convert.ToInt32(r["id"]),
-                        UserId = Convert.ToInt32(r["user_id"]),
-                        CouponId = r["coupon_id"] == DBNull.Value
-                            ? null
-                            : Convert.ToInt32(r["coupon_id"]),
+                        UserId = r["user_id"] == DBNull.Value ? null : Convert.ToInt32(r["user_id"]),
                         SubTotal = Convert.ToDecimal(r["sub_total"]),
                         ShippingFee = Convert.ToDecimal(r["shipping_fee"]),
                         Discount = Convert.ToDecimal(r["discount_amount"]),
                         GrandTotal = Convert.ToDecimal(r["grand_total"]),
-                        ShippingAddress = r["shipping_address"]?.ToString(),
-                        OrderDate = Convert.ToDateTime(r["order_date"])
+                        ShippingAddress = r["shipping_address"]?.ToString() ?? "",
+                        OrderDate = Convert.ToDateTime(r["order_date"]),
+                        Status = r["status"]?.ToString() ?? "pending"
                     };
                 }
             }
@@ -124,25 +112,26 @@ namespace WebDT.DAL
             return order;
         }
 
-        // =====================================================
-        // GET ORDER ITEMS
-        // =====================================================
         public List<OrderItemModel> GetItems(int orderId)
         {
             List<OrderItemModel> items = new();
             db.openConnection();
 
             string sql = @"
-                SELECT 
-                    oi.product_id,
-                    oi.quantity,
-                    oi.price,
-                    oi.total_price,
-                    p.name,
-                    p.image_url
-                FROM order_items oi
-                JOIN products p ON p.id = oi.product_id
-                WHERE oi.order_id = @oid";
+SELECT 
+    oi.id,
+    oi.order_id,
+    oi.coupon_id,
+    oi.product_id,
+    oi.quantity,
+    oi.price,
+    oi.total_price,
+    p.name,
+    p.image_url
+FROM order_items oi
+JOIN products p ON p.id = oi.product_id
+WHERE oi.order_id = @oid
+ORDER BY oi.id ASC";
 
             using var cmd = new SqlCommand(sql, db.getConnecttion());
             cmd.Parameters.AddWithValue("@oid", orderId);
@@ -152,9 +141,12 @@ namespace WebDT.DAL
             {
                 items.Add(new OrderItemModel
                 {
-                    ProductId = Convert.ToInt32(r["product_id"]),
-                    Name = r["name"].ToString(),
-                    Img = r["image_url"].ToString(),
+                    Id = Convert.ToInt32(r["id"]),
+                    OrderId = Convert.ToInt32(r["order_id"]),
+                    CouponId = r["coupon_id"] == DBNull.Value ? null : Convert.ToInt32(r["coupon_id"]),
+                    ProductId = r["product_id"] == DBNull.Value ? null : Convert.ToInt32(r["product_id"]),
+                    Name = r["name"]?.ToString() ?? "",
+                    Img = r["image_url"]?.ToString() ?? "",
                     Quantity = Convert.ToInt32(r["quantity"]),
                     Price = Convert.ToDecimal(r["price"]),
                     Total = Convert.ToDecimal(r["total_price"])

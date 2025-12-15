@@ -12,13 +12,14 @@ namespace WebDT.DAL
         {
             List<NavbarItem> list = new();
 
-            string sql = @"SELECT id, title, parent_id, menu_url, menu_index, isVisible 
-                           FROM menu
-                           WHERE isVisible = 1
-                           ORDER BY menu_index ASC";
+            string sql = @"
+SELECT id, title, parent_id, menu_url, menu_index, isVisible
+FROM menu
+WHERE isVisible = 1
+ORDER BY menu_index ASC";
 
-            _db.OpenConnection();
-            using var cmd = new SqlCommand(sql, _db.GetConnection());
+            _db.openConnection();
+            using var cmd = new SqlCommand(sql, _db.getConnecttion());
             using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
@@ -34,9 +35,8 @@ namespace WebDT.DAL
                 });
             }
 
-            _db.CloseConnection();
+            _db.closeConnection();
 
-            // Build cây menu
             var root = list.Where(x => x.ParentId == null).ToList();
             foreach (var parent in root)
             {

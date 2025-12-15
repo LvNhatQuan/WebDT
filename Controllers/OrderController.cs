@@ -10,89 +10,73 @@ namespace WebDT.Controllers
     [Authorize]
     public class OrderController : Controller
     {
-        private readonly CartDAL cartDal = new CartDAL();
-        private readonly OrderDAL orderDal = new OrderDAL();
+        private readonly OrderDAL _orderDal = new OrderDAL();
+        private readonly AddressDAL _addressDal = new AddressDAL();
+        private readonly CouponDAL _couponDal = new CouponDAL();
 
-        // ============================
-        // 1) TRANG CHECKOUT
-        // ============================
-        [HttpGet]
         public IActionResult Checkout()
         {
-            // LẤY USER ID TỪ CLAIM (KHÔNG DÙNG EMAIL NỮA)
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim))
-                return RedirectToAction("Login", "Account");
+            var cart = HttpContext.Session.Get<List<CartItem>>(MyConst.CART_KEY)
+                       ?? new List<CartItem>();
 
-            int userId = int.Parse(userIdClaim);
-
-            var cart = cartDal.GetCart(userId);
             if (!cart.Any())
                 return RedirectToAction("Index", "Cart");
 
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var defaultAddress = _addressDal.GetDefaultAddressString(userId);
+
             var vm = new CheckoutViewModel
             {
-                CartItems = cart
+                CartItems = cart,
+                ShippingFee = 15000,
+                Discount = 0,
+                ShippingAddress = defaultAddress
             };
 
             return View(vm);
         }
 
-        // ============================
-        // 2) ĐẶT HÀNG
-        // ============================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult PlaceOrder(string shippingAddress, int? couponId)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim))
-                return RedirectToAction("Login", "Account");
+            var cart = HttpContext.Session.Get<List<CartItem>>(MyConst.CART_KEY)
+                       ?? new List<CartItem>();
 
-            int userId = int.Parse(userIdClaim);
-
-            var cart = cartDal.GetCart(userId);
             if (!cart.Any())
                 return RedirectToAction("Index", "Cart");
 
-            // PHÍ & GIẢM GIÁ (mở rộng sau)
-            decimal shippingFee = 15000;
-            decimal discount = 0;
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            // 🔥 GỌI DAL DUY NHẤT
-            int orderId = orderDal.CreateOrder(
-                userId,
-                couponId,
-                cart,
-                shippingFee,
-                discount,
-                shippingAddress ?? "Chưa nhập địa chỉ"
+            // Nếu bạn muốn couponId áp cho toàn đơn -> chuyển thành discount_amount
+            decimal discountAmount = 0;
+            if (couponId.HasValue)
+            {
+                discountAmount = _couponDal.Apply(couponId.Value, cart.Sum(x => x.Total));
+            }
+
+            int orderId = _orderDal.CreateOrder(
+                userId: userId,
+                cart: cart,
+                shippingFee: 15000,
+                discountAmount: discountAmount,
+                address: shippingAddress ?? ""
             );
 
             if (orderId <= 0)
-            {
-                TempData["OrderError"] = "Đặt hàng thất bại!";
                 return RedirectToAction("Checkout");
-            }
 
-            // TODO: Clear cart DB nếu bạn có table cart
-            // cartDal.ClearCart(userId);
+            HttpContext.Session.Remove(MyConst.CART_KEY);
 
             return RedirectToAction("Success", new { id = orderId });
         }
 
-        // ============================
-        // 3) TRANG SUCCESS
-        // ============================
-        [HttpGet]
         public IActionResult Success(int id)
         {
-            var order = orderDal.GetOrderById(id);
-            if (order == null)
-                return RedirectToAction("Index", "Home");
+            var order = _orderDal.GetOrderById(id);
+            if (order == null) return RedirectToAction("Index", "Home");
 
-            order.Items = orderDal.GetItems(id);
-
+            order.Items = _orderDal.GetItems(id);
             return View(order);
         }
     }

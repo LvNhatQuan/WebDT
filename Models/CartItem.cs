@@ -3,13 +3,28 @@
     public class CartItem
     {
         public int IdProduct { get; set; }
-        public int? IdCoupon { get; set; }
-        public decimal Discount { get; set; } // Đổi từ CouponValue sang Discount
-        public string Name { get; set; }
-        public string Img { get; set; }
-        public decimal Price { get; set; } // Đổi từ int sang decimal
-        public double Rate { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+        public string Img { get; set; } = string.Empty;
+
+        public decimal Price { get; set; }
         public int Quantity { get; set; }
-        public decimal Total => Price * Quantity * (1 - Discount / 100); // Tính giá sau giảm
+
+        // ✅ coupon gắn theo từng item
+        public int? CouponId { get; set; }
+
+        // % giảm giá (lấy từ coupon.discount_value)
+        public decimal Discount { get; set; }
+
+        public decimal Total
+        {
+            get
+            {
+                var total = Price * Quantity;
+                if (Discount > 0)
+                    total -= total * Discount / 100;
+                return total;
+            }
+        }
     }
 }

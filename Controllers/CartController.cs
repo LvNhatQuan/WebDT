@@ -1,72 +1,109 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using WebDT.DAL;
 using WebDT.Helper;
 using WebDT.Models;
 
 namespace WebDT.Controllers
 {
+    [Authorize]
     public class CartController : Controller
     {
         private readonly ProductDAL _productDal = new ProductDAL();
-        private readonly UserDAL _userDal = new UserDAL();
-        private readonly CartDAL _cartDal = new CartDAL();
-        private readonly AddressDAL _addressDal = new AddressDAL();
 
-        public List<CartItem> Cart =>
-            HttpContext.Session.Get<List<CartItem>>(MyConst.CART_KEY)
-            ?? new List<CartItem>();
-
+        // =========================
+        // VIEW CART
+        // =========================
         public IActionResult Index()
         {
-            return View(Cart);
+            var cart = GetCart();
+            return View(cart);
         }
 
-        public IActionResult AddToCart(int id, int quantity = 1)
+        // =========================
+        // ADD TO CART (POST ONLY)
+        // =========================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AddToCart(int productId, int quantity)
         {
-            var claim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (claim == null)
-            {
-                return Json(new
-                {
-                    success = false,
-                    message = "Vui lòng đăng nhập.",
-                    redirectUrl = "/Account/Login"
-                });
-            }
+            var cart = GetCart();
 
-            var cart = Cart;
+            var product = _productDal.GetProductById(productId);
+            if (product == null)
+                return NotFound();
 
-            var item = cart.SingleOrDefault(p => p.IdProduct == id);
-            Product p = _productDal.GetProductById(id);
-
-            if (item == null)
-            {
-                item = new CartItem
-                {
-                    IdProduct = p.Id,
-                    Name = p.Name,
-                    Img = p.Image_url,
-                    Price = p.Price,
-                    Discount = p.Discount,
-                    Quantity = quantity
-                };
-                cart.Add(item);
-            }
-            else
+            var item = cart.FirstOrDefault(x => x.IdProduct == productId);
+            if (item != null)
             {
                 item.Quantity += quantity;
             }
-
-            HttpContext.Session.Set(MyConst.CART_KEY, cart);
-
-            return Json(new
+            else
             {
-                success = true,
-                cartCount = cart.Sum(x => x.Quantity),
-                cartTotal = cart.Sum(x => x.Total)
-            });
+                cart.Add(new CartItem
+                {
+                    IdProduct = product.Id,
+                    Name = product.Name,
+                    Img = product.ImageUrl,
+                    Price = product.Price,
+                    Quantity = quantity,
+                    CouponId = product.CouponId,
+                    Discount = product.Discount
+                });
+            }
+
+            SaveCart(cart);
+            return RedirectToAction("Index");
+        }
+
+        // =========================
+        // REMOVE
+        // =========================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Remove(int productId)
+        {
+            var cart = GetCart();
+            cart.RemoveAll(x => x.IdProduct == productId);
+            SaveCart(cart);
+
+            return RedirectToAction("Index");
+        }
+
+        // =========================
+        // UPDATE
+        // =========================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Update(int productId, int quantity)
+        {
+            var cart = GetCart();
+            var item = cart.FirstOrDefault(x => x.IdProduct == productId);
+
+            if (item != null)
+            {
+                if (quantity <= 0)
+                    cart.Remove(item);
+                else
+                    item.Quantity = quantity;
+            }
+
+            SaveCart(cart);
+            return RedirectToAction("Index");
+        }
+
+        // =========================
+        // SESSION HELPERS
+        // =========================
+        private List<CartItem> GetCart()
+        {
+            return HttpContext.Session.Get<List<CartItem>>(MyConst.CART_KEY)
+                   ?? new List<CartItem>();
+        }
+
+        private void SaveCart(List<CartItem> cart)
+        {
+            HttpContext.Session.Set(MyConst.CART_KEY, cart);
         }
     }
 }

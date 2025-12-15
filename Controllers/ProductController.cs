@@ -9,17 +9,16 @@ namespace WebDT.Controllers
         private readonly ProductDAL _productDal = new ProductDAL();
 
         // ============================
-        //        PRODUCT LIST
+        // PRODUCT LIST + PAGINATION
         // ============================
-        // Hỗ trợ: categoryId, search, sort, pagination
         public IActionResult Index(int? categoryId, int page = 1, string sortOrder = "")
         {
             int pageSize = 6;
 
-            // Lưu thông tin filter vào ViewData để View dùng lại
             ViewData["CategoryId"] = categoryId;
             ViewData["SortOrder"] = sortOrder;
 
+            // Trường hợp không filter → load nhanh toàn bộ (trang chủ / demo)
             if (!categoryId.HasValue && string.IsNullOrEmpty(sortOrder))
             {
                 var allProducts = _productDal.GetAllProducts();
@@ -32,26 +31,29 @@ namespace WebDT.Controllers
                 });
             }
 
-
-
-            // Ngược lại → dùng phân trang
-            List<Product> products = _productDal.GetProducts_Pagination(page, pageSize, categoryId, sortOrder);
+            // Pagination
+            List<Product> products = _productDal.GetProducts_Pagination(
+                page,
+                pageSize,
+                categoryId,
+                sortOrder
+            );
 
             int totalRows = _productDal.GetTotalProducts(categoryId);
-            int maxPage = (int)Math.Ceiling((double)totalRows / pageSize);
+            int pageCount = (int)Math.Ceiling((double)totalRows / pageSize);
 
-            ProductPagination model = new ProductPagination
+            var model = new ProductPagination
             {
                 Products = products,
                 CurrentPageIndex = page,
-                PageCount = maxPage
+                PageCount = pageCount
             };
 
             return View(model);
         }
 
         // ============================
-        //        PRODUCT DETAIL
+        // PRODUCT DETAIL
         // ============================
         public IActionResult Detail(int id)
         {
@@ -64,7 +66,7 @@ namespace WebDT.Controllers
         }
 
         // ============================
-        //          SEARCH
+        // SEARCH
         // ============================
         public IActionResult Search(string keyword)
         {
@@ -74,22 +76,27 @@ namespace WebDT.Controllers
                 return View(new List<Product>());
             }
 
-            List<Product> products = _productDal.SearchProducts(keyword);
+            var products = _productDal.SearchProducts(keyword);
             ViewData["SearchKeyword"] = keyword;
 
             return View(products);
         }
 
         // ============================
-        //      CATEGORY REDIRECT
+        // CATEGORY REDIRECT
         // ============================
         public IActionResult Category(int id, int page = 1, string sortOrder = "")
         {
-            return RedirectToAction("Index", new { categoryId = id, page, sortOrder });
+            return RedirectToAction("Index", new
+            {
+                categoryId = id,
+                page,
+                sortOrder
+            });
         }
 
         // ============================
-        //       FEATURED VIEW PAGE
+        // FEATURED PRODUCTS
         // ============================
         public IActionResult Featured()
         {

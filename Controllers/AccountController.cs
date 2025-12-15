@@ -21,8 +21,8 @@ namespace WebDT.Controllers
         public IActionResult Profile()
         {
             string username = User.Identity?.Name ?? "";
-
             var user = _userDal.GetUserByUsername(username);
+
             if (user == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy tài khoản.";
@@ -52,14 +52,12 @@ namespace WebDT.Controllers
 
             bool ok = _userDal.UpdateProfile(oldUser);
 
-            if (ok)
-                TempData["SuccessMessage"] = "Cập nhật thông tin thành công!";
-            else
-                TempData["ErrorMessage"] = "Cập nhật thất bại.";
+            TempData[ok ? "SuccessMessage" : "ErrorMessage"] = ok
+                ? "Cập nhật thông tin thành công!"
+                : "Cập nhật thất bại.";
 
             return View(oldUser);
         }
-
 
         [HttpGet]
         public IActionResult Login() => View();
@@ -75,29 +73,43 @@ namespace WebDT.Controllers
                 return View();
             }
 
-            if (user.Password != password)   // So sánh plain text
+            if (!user.IsActive)
+            {
+                TempData["Error"] = "Tài khoản đã bị vô hiệu hóa!";
+                return View();
+            }
+
+            if (user.IsLocked)
+            {
+                TempData["Error"] = "Tài khoản đã bị khóa!";
+                return View();
+            }
+
+            if (!VerifyPassword(user.Password, password))
             {
                 TempData["Error"] = "Sai mật khẩu!";
                 return View();
             }
 
-            // QUAN TRỌNG: Thêm ClaimTypes.NameIdentifier
+            // ⭐ Claims chuẩn
             var claims = new List<Claim>
-{
-    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),   // ⭐ bắt buộc
-    new Claim(ClaimTypes.Name, user.Email),
-    new Claim(ClaimTypes.Role, user.Role)
-};
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),     // ⭐ MUST be Username để Profile load đúng
+                new Claim(ClaimTypes.Role, user.Role ?? "customer")
+            };
 
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var claimsIdentity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme
+            );
 
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity)
             );
 
-
-            // Lưu thông tin user vào session (tuỳ chọn nhưng hữu ích)
+            // Optional session
             HttpContext.Session.SetInt32("UserId", user.Id);
             HttpContext.Session.SetString("UserName", user.Username);
 
@@ -127,14 +139,38 @@ namespace WebDT.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
             return RedirectToAction("Login", "Account");
         }
 
-        public IActionResult AccessDenied()
-        {
-            return View();
-        }
+        public IActionResult AccessDenied() => View();
 
+        // =========================
+        // Password verify (plain + bcrypt nếu có thư viện)
+        // =========================
+        private bool VerifyPassword(string stored, string input)
+        {
+            stored ??= "";
+            input ??= "";
+
+            // plain text
+            if (!stored.StartsWith("$2")) return stored == input;
+
+            // bcrypt (nếu project có BCrypt.Net-Next)
+            try
+            {
+                var t = Type.GetType("BCrypt.Net.BCrypt, BCrypt.Net-Next");
+                if (t == null) return false;
+
+                var m = t.GetMethod("Verify", new[] { typeof(string), typeof(string) });
+                if (m == null) return false;
+
+                var ok = (bool)m.Invoke(null, new object[] { input, stored })!;
+                return ok;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
