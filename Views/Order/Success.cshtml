@@ -1,0 +1,89 @@
+﻿@model WebDT.Models.OrderModel
+
+@{
+    ViewData["Title"] = "Đặt hàng thành công";
+}
+
+<div class="container py-5">
+    <div class="alert alert-success mb-4">
+        <h4 class="mb-1">
+            <i class="fas fa-check-circle me-2"></i>
+            Đặt hàng thành công!
+        </h4>
+        <p class="mb-0">
+            Cảm ơn bạn đã mua sắm tại cửa hàng.
+        </p>
+    </div>
+
+    <!-- THÔNG TIN ĐƠN HÀNG -->
+    <div class="card mb-4">
+        <div class="card-header fw-bold">
+            🧾 Thông tin đơn hàng
+        </div>
+        <div class="card-body">
+            <p><strong>Mã đơn hàng:</strong> #@Model.Id</p>
+            <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><strong>Địa chỉ giao hàng:</strong> @Model.ShippingAddress</p>
+            <p>
+                <strong>Tổng tiền:</strong>
+                <span class="text-danger fw-bold">
+                    @Model.GrandTotal.ToString("#,##0 VND")
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <!-- DANH SÁCH SẢN PHẨM -->
+    <div class="card mb-4">
+        <div class="card-header fw-bold">
+            📦 Sản phẩm đã đặt
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-bordered mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th class="text-end">Tổng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="~/images/SanPham/@item.Img"
+                                         style="width:50px;height:50px"
+                                         class="me-3 rounded" />
+                                    @item.Name
+                                </div>
+                            </td>
+                            <td>@item.Price.ToString("#,##0 VND")</td>
+                            <td>@item.Quantity</td>
+                            <td class="text-end text-danger fw-bold">
+                                @item.Total.ToString("#,##0 VND")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ACTION -->
+    <div class="d-flex justify-content-between">
+        <a asp-controller="Home"
+           asp-action="Index"
+           class="btn btn-primary">
+            ⬅️ Về trang chủ
+        </a>
+
+        <a asp-controller="Cart"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Xem giỏ hàng
+        </a>
+    </div>
+</div>

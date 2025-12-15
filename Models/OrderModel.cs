@@ -4,12 +4,16 @@
     {
         public int Id { get; set; }
         public int UserId { get; set; }
-        public int CouponId { get; set; }
+
+        // 🔥 FIX: phải nullable
+        public int? CouponId { get; set; }
+
         public decimal SubTotal { get; set; }
         public decimal ShippingFee { get; set; }
         public decimal Discount { get; set; }
         public decimal GrandTotal { get; set; }
-        public string ShippingAddress { get; set; }
+
+        public string? ShippingAddress { get; set; }
         public DateTime OrderDate { get; set; }
 
         // ⭐ rất quan trọng

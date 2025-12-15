@@ -1,6 +1,52 @@
 ﻿@model WebDT.Models.Product
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+
 @{
+    ViewData["Title"] = Model.Name;
 }
+
+<div class="row mt-4">
+
+    <div class="col-md-6">
+        <img src="~/Images/SanPham/@Model.Image_url"
+             class="img-fluid rounded shadow"
+             style="aspect-ratio:1.1; object-fit:cover" />
+    </div>
+
+    <div class="col-md-6">
+
+        <h2>@Model.Name</h2>
+        <h4 class="text-primary fw-bold">@Model.Price.ToString("#,##0 VND")</h4>
+
+        <p class="text-muted mt-3">@Model.Description</p>
+
+        <button onclick="clickAddToCart(@Model.Id)"
+                class="btn btn-primary rounded-pill px-4 mt-3">
+            <i class="fa fa-shopping-bag me-2"></i> Thêm vào giỏ
+        </button>
+    </div>
+
+</div>
+
+<script>
+    function clickAddToCart(idProduct) {
+        $.ajax({
+            url: '@Url.Action("AddToCart", "Cart")',
+            type: 'POST',
+            data: { id: idProduct, quantity: 1 },
+            success: function (res) {
+                if (res.success) {
+
+                    $.get('@Url.Action("RefreshCartViewComponent", "Cart")', function (html) {
+                        $("#cart_view_component").html(html);
+                    });
+
+                    alert("Sản phẩm đã được thêm vào giỏ hàng!");
+                }
+                else {
+                    if (res.redirectUrl) window.location.href = res.redirectUrl;
+                    else alert(res.message);
+                }
+            }
+        });
+    }
+</script>

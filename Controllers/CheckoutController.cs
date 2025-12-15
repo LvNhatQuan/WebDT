@@ -1,115 +1,113 @@
-﻿//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.Data.SqlClient;
-//using WebDT.DAL;
-//using WebDT.Database;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using WebDT.DAL;
+using WebDT.Helper;
+using WebDT.Models;
 
-//namespace WebDT.Controllers
-//{
-//    public class CheckoutController : Controller
-//    {
-//        DbConnect connect = new DbConnect();
-//        private readonly UserDAL userDal = new UserDAL();
+namespace WebDT.Controllers
+{
+    [Authorize]
+    public class CheckoutController : Controller
+    {
+        private readonly OrderDAL _orderDal = new OrderDAL();
 
-//        public IActionResult Index()
-//        {
-//            int userId = GetUserId();
-//            ViewBag.Addresses = GetAddresses(userId);
-//            ViewBag.CartItems = GetCartItems(userId);
+        // =========================
+        // LẤY GIỎ HÀNG TỪ SESSION
+        // =========================
+        private List<CartItem> Cart =>
+            HttpContext.Session.Get<List<CartItem>>(MyConst.CART_KEY)
+            ?? new List<CartItem>();
 
-//            return View();
-//        }
+        // =========================
+        // GET: /Checkout
+        // =========================
+        [HttpGet]
+        public IActionResult Index()
+        {
+            if (!Cart.Any())
+            {
+                TempData["CheckoutError"] = "Giỏ hàng đang trống!";
+                return RedirectToAction("Index", "Cart");
+            }
 
-//        [HttpPost]
-//        public IActionResult PlaceOrder(string shipping_address, int? coupon_id)
-//        {
-//            int userId = GetUserId();
-//            var items = GetCartItems(userId);
+            var vm = new CheckoutViewModel
+            {
+                CartItems = Cart
+            };
 
-//            decimal subTotal = items.Sum(x => x.Price * x.Quantity);
-//            decimal discount = 0;
-//            decimal shipFee = 15000;
+            return View(vm);
+        }
 
-//            if (coupon_id.HasValue)
-//                discount = ApplyCoupon(coupon_id.Value, subTotal);
+        // =========================
+        // POST: /Checkout/Confirm
+        // =========================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Confirm(string shippingAddress)
+        {
+            // Kiểm tra giỏ
+            if (!Cart.Any())
+            {
+                TempData["CheckoutError"] = "Giỏ hàng trống!";
+                return RedirectToAction("Index", "Cart");
+            }
 
-//            decimal grand = subTotal + shipFee - discount;
+            // Lấy userId từ claim
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
-//            connect.openConnection();
+            int userId = int.Parse(userIdClaim);
 
-//            // INSERT ORDER
-//            int orderId;
+            // Các tham số mở rộng
+            int? couponId = null;      // chưa dùng coupon
+            decimal shippingFee = 0;
+            decimal discount = 0;
 
-//            using (var cmd = new SqlCommand(@"
-//            INSERT INTO orders (user_id, coupon_id, sub_total, shipping_fee, discount_amount, grand_total, shipping_address)
-//            OUTPUT INSERTED.id
-//            VALUES(@uid, @cid, @sub, @ship, @disc, @grand, @addr)",
-//                connect.getConnecttion()))
-//            {
-//                cmd.Parameters.AddWithValue("@uid", userId);
-//                cmd.Parameters.AddWithValue("@cid", (object)coupon_id ?? DBNull.Value);
-//                cmd.Parameters.AddWithValue("@sub", subTotal);
-//                cmd.Parameters.AddWithValue("@ship", shipFee);
-//                cmd.Parameters.AddWithValue("@disc", discount);
-//                cmd.Parameters.AddWithValue("@grand", grand);
-//                cmd.Parameters.AddWithValue("@addr", shipping_address);
+            // 🔥 GỌI DAL DUY NHẤT
+            int orderId = _orderDal.CreateOrder(
+                userId,
+                couponId,
+                Cart,
+                shippingFee,
+                discount,
+                shippingAddress ?? "Chưa nhập địa chỉ"
+            );
 
-//                orderId = (int)cmd.ExecuteScalar();
-//            }
+            if (orderId <= 0)
+            {
+                TempData["CheckoutError"] = "Thanh toán thất bại!";
+                return RedirectToAction("Index");
+            }
 
-//            // INSERT order_items
-//            foreach (var i in items)
-//            {
-//                using var cmd = new SqlCommand(@"
-//                INSERT INTO order_items(order_id, product_id, quantity, price, total_price)
-//                VALUES(@oid, @pid, @qty, @price, @total)",
-//                    connect.getConnecttion());
+            // Xoá giỏ hàng sau khi thanh toán thành công
+            HttpContext.Session.Set(MyConst.CART_KEY, new List<CartItem>());
 
-//                cmd.Parameters.AddWithValue("@oid", orderId);
-//                cmd.Parameters.AddWithValue("@pid", i.IdProduct);
-//                cmd.Parameters.AddWithValue("@qty", i.Quantity);
-//                cmd.Parameters.AddWithValue("@price", i.Price);
-//                cmd.Parameters.AddWithValue("@total", i.Total);
-//                cmd.ExecuteNonQuery();
-//            }
+            TempData["CheckoutSuccess"] = "Thanh toán thành công!";
+            return RedirectToAction("Success", new { id = orderId });
+        }
 
-//            // CLEAR CART
-//            using var clear = new SqlCommand("DELETE FROM cart WHERE customerId=@uid", connect.getConnecttion());
-//            clear.Parameters.AddWithValue("@uid", userId);
-//            clear.ExecuteNonQuery();
+        // =========================
+        // GET: /Checkout/Success
+        // =========================
+        [HttpGet]
+        public IActionResult Success(int id)
+        {
+            var order = _orderDal.GetOrderById(id);
+            if (order == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
-//            connect.closeConnection();
+            var items = _orderDal.GetItems(id);
 
-//            return RedirectToAction("Success", new { id = orderId });
-//        }
+            ViewBag.Order = order;
+            ViewBag.Items = items;
 
-//        public IActionResult Success(int id)
-//        {
-//            ViewBag.OrderId = id;
-//            return View();
-//        }
-
-//        // Helpers...
-//        private decimal ApplyCoupon(int cid, decimal subtotal)
-//        {
-//            connect.openConnection();
-
-//            using var cmd = new SqlCommand("SELECT discount_value FROM coupons WHERE id=@id AND is_active=1", connect.getConnecttion());
-//            cmd.Parameters.AddWithValue("@id", cid);
-
-//            var result = cmd.ExecuteScalar();
-//            connect.closeConnection();
-
-//            if (result == null) return 0;
-
-//            int percent = Convert.ToInt32(result);
-//            return subtotal * percent / 100;
-//        }
-
-//        private int GetUserId()
-//        {
-//            var email = User.Identity.Name;
-//            return userDal.GetUserByEmail(email).Id;
-//        }
-//    }
-
-//}
+            return View();
+        }
+    }
+}

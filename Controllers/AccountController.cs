@@ -75,23 +75,31 @@ namespace WebDT.Controllers
                 return View();
             }
 
-            if (user.Password != password)   
+            if (user.Password != password)   // So sánh plain text
             {
                 TempData["Error"] = "Sai mật khẩu!";
                 return View();
             }
 
+            // QUAN TRỌNG: Thêm ClaimTypes.NameIdentifier
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Email),
-                new Claim("FullName", user.FullName),
-                new Claim(ClaimTypes.Role, user.Role)
-            };
+{
+    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),   // ⭐ bắt buộc
+    new Claim(ClaimTypes.Name, user.Email),
+    new Claim(ClaimTypes.Role, user.Role)
+};
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-            await HttpContext.SignInAsync(principal);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity)
+            );
+
+
+            // Lưu thông tin user vào session (tuỳ chọn nhưng hữu ích)
+            HttpContext.Session.SetInt32("UserId", user.Id);
+            HttpContext.Session.SetString("UserName", user.Username);
 
             if (user.Role == "admin")
                 return RedirectToAction("Index", "ProductAdmin", new { area = "Admin" });

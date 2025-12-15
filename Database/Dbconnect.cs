@@ -8,7 +8,6 @@ namespace WebDT.Database
             "Data Source=NhatQuan\\SQLEXPRESS;Initial Catalog=DT;Integrated Security=True;TrustServerCertificate=False;Encrypt=false"
         );
 
-        // === HÀM GỐC CỦA BẠN (KHÔNG XOÁ) ===
         public SqlConnection getConnecttion()
         {
             return connect;
@@ -26,20 +25,18 @@ namespace WebDT.Database
                 connect.Close();
         }
 
-        // === HÀM ALIAS MỚI THÊM VÀO CHO DAL ===
-        public SqlConnection GetConnection()
+        // Alias mới
+        public SqlConnection GetConnection() => connect;
+        public void OpenConnection() => openConnection();
+        public void CloseConnection() => closeConnection();
+
+        // ⭐ Thêm hàm này để sửa lỗi CartDAL
+        public string GetConnectionString()
         {
-            return getConnecttion();
+            return connect.ConnectionString;
         }
 
-        public void OpenConnection()
-        {
-            openConnection();
-        }
-
-        public void CloseConnection()
-        {
-            closeConnection();
-        }
+        // Cũng có thể dùng property
+        public string ConnectionString => connect.ConnectionString;
     }
 }

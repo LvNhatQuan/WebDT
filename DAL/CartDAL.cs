@@ -6,133 +6,109 @@ namespace WebDT.DAL
 {
     public class CartDAL
     {
-        private readonly DbConnect db = new DbConnect();
+        private readonly DbConnect _db = new DbConnect();
 
-        // ============================
-        // MAP CART ITEM
-        // ============================
+        // Map CartItem
         private CartItem MapItem(SqlDataReader r)
         {
             return new CartItem
             {
                 IdProduct = Convert.ToInt32(r["productId"]),
-                Name = r["name"].ToString(),
+                Name = r["name"].ToString() ?? "",
                 Img = r["image_url"].ToString(),
-                Price = Convert.ToInt32(r["price"]),
+                Price = Convert.ToDecimal(r["price"]),
                 Quantity = Convert.ToInt32(r["quantity"]),
+                Discount = 0
             };
         }
 
-        // ============================
-        // 1) LẤY GIỎ HÀNG THEO USER
-        // ============================
+        // Lấy giỏ hàng DB
         public List<CartItem> GetCart(int userId)
         {
             List<CartItem> list = new();
-            db.openConnection();
+            _db.openConnection();
 
             string sql = @"
-                SELECT 
-                    c.productId,
-                    c.quantity,
-                    p.name,
-                    p.price,
-                    p.image_url
+                SELECT c.productId, c.quantity, p.name, p.price, p.image_url
                 FROM cart c
                 JOIN products p ON p.id = c.productId
                 WHERE c.customerId = @uid";
 
-            using var cmd = new SqlCommand(sql, db.getConnecttion());
+            using var cmd = new SqlCommand(sql, _db.getConnecttion());
             cmd.Parameters.AddWithValue("@uid", userId);
 
             using var r = cmd.ExecuteReader();
-            while (r.Read())
-            {
-                list.Add(MapItem(r));
-            }
+            while (r.Read()) list.Add(MapItem(r));
 
-            db.closeConnection();
+            _db.closeConnection();
             return list;
         }
 
-        // ============================
-        // 2) THÊM HOẶC CỘNG DỒN VÀO GIỎ
-        // ============================
-        public void AddToCart(int userId, int productId, int qty)
+        // ===================
+        // CHECKOUT
+        // ===================
+        public bool CheckOut(User user, List<CartItem> cart)
         {
-            db.openConnection();
+            string connStr = _db.GetConnectionString();  // 🔥 sửa lỗi ConnectionString
 
-            string sql = @"
-                IF EXISTS (SELECT 1 FROM cart WHERE customerId=@uid AND productId=@pid)
-                    UPDATE cart SET quantity = quantity + @qty
-                    WHERE customerId=@uid AND productId=@pid
-                ELSE
-                    INSERT INTO cart (customerId, productId, quantity, createAt)
-                    VALUES (@uid, @pid, @qty, GETDATE())";
+            using var conn = new SqlConnection(connStr);
+            conn.Open();
 
-            using var cmd = new SqlCommand(sql, db.getConnecttion());
-            cmd.Parameters.AddWithValue("@uid", userId);
-            cmd.Parameters.AddWithValue("@pid", productId);
-            cmd.Parameters.AddWithValue("@qty", qty);
+            using var tran = conn.BeginTransaction();
 
-            cmd.ExecuteNonQuery();
-            db.closeConnection();
-        }
+            try
+            {
+                decimal subtotal = cart.Sum(i => i.Total);
 
-        // ============================
-        // 3) CẬP NHẬT SỐ LƯỢNG
-        // ============================
-        public void UpdateQuantity(int userId, int productId, int qty)
-        {
-            db.openConnection();
+                // 1. INSERT ORDER
+                string sqlOrder = @"
+                    INSERT INTO orders (user_id, sub_total, shipping_fee, discount_amount,
+                                        grand_total, shipping_address, order_date)
+                    VALUES (@uid, @sub, 0, 0, @sub, @addr, GETDATE());
+                    SELECT SCOPE_IDENTITY();";
 
-            string sql = @"
-                UPDATE cart 
-                SET quantity=@qty
-                WHERE customerId=@uid AND productId=@pid";
+                int orderId;
+                using (var cmd = new SqlCommand(sqlOrder, conn, tran))
+                {
+                    cmd.Parameters.AddWithValue("@uid", user.Id);
+                    cmd.Parameters.AddWithValue("@sub", subtotal);
+                    
 
-            using var cmd = new SqlCommand(sql, db.getConnecttion());
-            cmd.Parameters.AddWithValue("@uid", userId);
-            cmd.Parameters.AddWithValue("@pid", productId);
-            cmd.Parameters.AddWithValue("@qty", qty);
+                    orderId = Convert.ToInt32(cmd.ExecuteScalar());
+                }
 
-            cmd.ExecuteNonQuery();
-            db.closeConnection();
-        }
+                // 2. INSERT ORDER_ITEMS
+                foreach (var item in cart)
+                {
+                    string sqlItem = @"
+                        INSERT INTO order_items (order_id, product_id, quantity, price, total_price)
+                        VALUES (@oid, @pid, @qty, @price, @total)";
 
-        // ============================
-        // 4) XOÁ MỘT SẢN PHẨM KHỎI GIỎ
-        // ============================
-        public void DeleteItem(int userId, int productId)
-        {
-            db.openConnection();
+                    using var cmd = new SqlCommand(sqlItem, conn, tran);
+                    cmd.Parameters.AddWithValue("@oid", orderId);
+                    cmd.Parameters.AddWithValue("@pid", item.IdProduct);
+                    cmd.Parameters.AddWithValue("@qty", item.Quantity);
+                    cmd.Parameters.AddWithValue("@price", item.Price);
+                    cmd.Parameters.AddWithValue("@total", item.Total);
 
-            using var cmd = new SqlCommand(
-                "DELETE FROM cart WHERE customerId=@uid AND productId=@pid",
-                db.getConnecttion());
+                    cmd.ExecuteNonQuery();
+                }
 
-            cmd.Parameters.AddWithValue("@uid", userId);
-            cmd.Parameters.AddWithValue("@pid", productId);
+                // 3. Xoá giỏ
+                using (var cmd = new SqlCommand("DELETE FROM cart WHERE customerId=@uid", conn, tran))
+                {
+                    cmd.Parameters.AddWithValue("@uid", user.Id);
+                    cmd.ExecuteNonQuery();
+                }
 
-            cmd.ExecuteNonQuery();
-            db.closeConnection();
-        }
-
-        // ============================
-        // 5) XOÁ TOÀN BỘ GIỎ (CHECKOUT XONG)
-        // ============================
-        public void ClearCart(int userId)
-        {
-            db.openConnection();
-
-            using var cmd = new SqlCommand(
-                "DELETE FROM cart WHERE customerId=@uid",
-                db.getConnecttion());
-
-            cmd.Parameters.AddWithValue("@uid", userId);
-            cmd.ExecuteNonQuery();
-
-            db.closeConnection();
+                tran.Commit();
+                return true;
+            }
+            catch
+            {
+                tran.Rollback();
+                return false;
+            }
         }
     }
 }

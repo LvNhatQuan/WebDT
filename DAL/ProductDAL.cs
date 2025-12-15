@@ -8,213 +8,273 @@ namespace WebDT.DAL
     {
         private readonly DbConnect _db = new DbConnect();
 
-        // Lấy toàn bộ sản phẩm
+        // -------------------------------
+        // MAP PRODUCT (Full Data Mapping)
+        // -------------------------------
+        private Product Map(SqlDataReader r)
+        {
+            return new Product
+            {
+                Id = r.GetInt32(r.GetOrdinal("Id")),
+                CategoryId = r.IsDBNull(r.GetOrdinal("CategoryId")) ? null : r.GetInt32(r.GetOrdinal("CategoryId")),
+                CategoryName = r.IsDBNull(r.GetOrdinal("CategoryName")) ? "" : r.GetString(r.GetOrdinal("CategoryName")),
+                Name = r.GetString(r.GetOrdinal("Name")),
+                Description = r.IsDBNull(r.GetOrdinal("Description")) ? null : r.GetString(r.GetOrdinal("Description")),
+                Price = r.GetDecimal(r.GetOrdinal("Price")),
+                StockQuantity = r.IsDBNull(r.GetOrdinal("stock_quantity")) ? 0 : r.GetInt32(r.GetOrdinal("stock_quantity")),
+                ImageUrl = r.IsDBNull(6) ? "" : r.GetString(6),
+                IsActive = r.GetBoolean(r.GetOrdinal("is_active")),
+                CreatedAt = r.GetDateTime(r.GetOrdinal("created_at")),
+                Discount = r.IsDBNull(r.GetOrdinal("Discount"))
+                    ? 0
+                    : Convert.ToDecimal(r["Discount"])
+
+            };
+        }
+
+        // -------------------------------
+        // BASE QUERY FOR ALL PRODUCT LOAD
+        // -------------------------------
+        private string BaseSelectQuery = @"
+            SELECT 
+                p.id AS Id,
+                p.category_id AS CategoryId,
+                p.name AS Name,
+                p.description AS Description,
+                p.price AS Price,
+                p.stock_quantity,
+                p.image_url,
+                p.is_active,
+                p.created_at,
+                c.name AS CategoryName,
+                ISNULL(cp.discount_value, 0) AS Discount
+            FROM products p
+            LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN coupons cp ON cp.id = p.coupon_id 
+                AND cp.is_active = 1 
+                AND GETDATE() BETWEEN cp.start_date AND cp.end_date
+        ";
+
+        // ===============================
+        // GET ALL PRODUCTS
+        // ===============================
         public List<Product> GetAllProducts()
         {
             List<Product> list = new();
-            string sql = @"SELECT id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
-                           FROM products
-                           ORDER BY created_at DESC";
+            string sql = BaseSelectQuery + " WHERE p.is_active = 1 ORDER BY p.created_at DESC";
 
             _db.OpenConnection();
             using var cmd = new SqlCommand(sql, _db.GetConnection());
-            using var reader = cmd.ExecuteReader();
-
-            while (reader.Read()) list.Add(MapToProduct(reader));
-
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) list.Add(Map(r));
             _db.CloseConnection();
             return list;
         }
 
-        // Lấy sản phẩm theo ID
+        // ===============================
+        // GET PRODUCT BY ID
+        // ===============================
         public Product? GetProductById(int id)
         {
-            string sql = @"SELECT id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
-                           FROM products
-                           WHERE id = @id";
+            Product? p = null;
+
+            string sql = BaseSelectQuery + " WHERE p.id = @id";
 
             _db.OpenConnection();
             using var cmd = new SqlCommand(sql, _db.GetConnection());
             cmd.Parameters.AddWithValue("@id", id);
-            using var reader = cmd.ExecuteReader();
+            using var r = cmd.ExecuteReader();
 
-            Product? product = null;
-            if (reader.Read()) product = MapToProduct(reader);
-
+            if (r.Read()) p = Map(r);
             _db.CloseConnection();
-            return product;
+
+            return p;
         }
 
-        // Lấy sản phẩm theo danh mục
+        // ===============================
+        // GET PRODUCT BY CATEGORY
+        // ===============================
         public List<Product> GetProductsByCategory(int categoryId)
         {
             List<Product> list = new();
-            string sql = @"SELECT id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
-                           FROM products
-                           WHERE category_id = @cat
-                           ORDER BY created_at DESC";
+
+            string sql = BaseSelectQuery + @"
+                WHERE p.category_id = @cat AND p.is_active = 1
+                ORDER BY p.created_at DESC";
 
             _db.OpenConnection();
             using var cmd = new SqlCommand(sql, _db.GetConnection());
             cmd.Parameters.AddWithValue("@cat", categoryId);
-            using var reader = cmd.ExecuteReader();
+            using var r = cmd.ExecuteReader();
 
-            while (reader.Read()) list.Add(MapToProduct(reader));
-
+            while (r.Read()) list.Add(Map(r));
             _db.CloseConnection();
             return list;
         }
 
-        // =========================
-        // FEATURED PRODUCTS
-        // =========================
+        // ===============================
+        // GET FEATURED PRODUCTS
+        // ===============================
         public List<Product> GetFeaturedProducts(int limit = 4)
         {
             List<Product> list = new();
 
-            string sql = @$"
-                SELECT TOP ({limit}) id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
-                FROM products
-                WHERE is_active = 1
-                ORDER BY created_at DESC";
+            string sql = BaseSelectQuery + $@"
+                WHERE p.is_active = 1
+                ORDER BY p.created_at DESC
+                OFFSET 0 ROWS FETCH NEXT {limit} ROWS ONLY";
 
             _db.OpenConnection();
             using var cmd = new SqlCommand(sql, _db.GetConnection());
-            using var reader = cmd.ExecuteReader();
+            using var r = cmd.ExecuteReader();
 
-            while (reader.Read()) list.Add(MapToProduct(reader));
-
+            while (r.Read()) list.Add(Map(r));
             _db.CloseConnection();
             return list;
         }
 
-        // =========================
-        // BEST SELLER PRODUCTS
-        // =========================
+        // ===============================
+        // GET BEST SELLER
+        // ===============================
         public List<Product> GetBestSellerProducts(int limit = 4)
         {
             List<Product> list = new();
 
-            string sql = @$"
-                SELECT TOP ({limit}) p.id, p.category_id, p.name, p.description, p.price, 
-                       p.stock_quantity, p.image_url, p.is_active, p.created_at
+            string sql = @"
+                SELECT TOP (@limit)
+                    p.id AS Id,
+                    p.category_id AS CategoryId,
+                    p.name AS Name,
+                    p.description AS Description,
+                    p.price AS Price,
+                    p.stock_quantity,
+                    p.image_url,
+                    p.is_active,
+                    p.created_at,
+                    c.name AS CategoryName,
+                    ISNULL(cp.discount_value, 0) AS Discount,
+                    SUM(oi.quantity) AS TotalSold
                 FROM products p
-                JOIN order_items oi ON oi.product_id = p.id
-                GROUP BY p.id, p.category_id, p.name, p.description, p.price, 
-                         p.stock_quantity, p.image_url, p.is_active, p.created_at
-                ORDER BY SUM(oi.quantity) DESC";
+                LEFT JOIN order_items oi ON p.id = oi.product_id
+                LEFT JOIN categories c ON p.category_id = c.id
+                LEFT JOIN coupons cp ON cp.id = p.coupon_id 
+                    AND cp.is_active = 1 
+                    AND GETDATE() BETWEEN cp.start_date AND cp.end_date
+                WHERE p.is_active = 1
+                GROUP BY p.id, p.category_id, p.name, p.description, p.price,
+                         p.stock_quantity, p.image_url, p.is_active, 
+                         p.created_at, c.name, cp.discount_value
+                ORDER BY TotalSold DESC, created_at DESC";
 
             _db.OpenConnection();
             using var cmd = new SqlCommand(sql, _db.GetConnection());
-            using var reader = cmd.ExecuteReader();
+            cmd.Parameters.AddWithValue("@limit", limit);
+            using var r = cmd.ExecuteReader();
 
-            while (reader.Read()) list.Add(MapToProduct(reader));
-
+            while (r.Read()) list.Add(Map(r));
             _db.CloseConnection();
             return list;
         }
 
-        // =========================
+        // ===============================
         // RELATED PRODUCTS
-        // =========================
+        // ===============================
         public List<Product> GetRelatedProducts(int productId, int limit = 4)
         {
             List<Product> list = new();
 
-            string sql = @$"
-                SELECT TOP ({limit}) id, category_id, name, description, price,
-                       stock_quantity, image_url, is_active, created_at
-                FROM products
-                WHERE category_id = (SELECT category_id FROM products WHERE id = @id)
-                  AND id <> @id
-                ORDER BY NEWID()";
+            string sql = BaseSelectQuery + @"
+                WHERE p.category_id = (SELECT category_id FROM products WHERE id = @id)
+                  AND p.id <> @id
+                ORDER BY NEWID()
+                OFFSET 0 ROWS FETCH NEXT @limit ROWS ONLY";
 
             _db.OpenConnection();
             using var cmd = new SqlCommand(sql, _db.GetConnection());
             cmd.Parameters.AddWithValue("@id", productId);
-            using var reader = cmd.ExecuteReader();
+            cmd.Parameters.AddWithValue("@limit", limit);
+            using var r = cmd.ExecuteReader();
 
-            while (reader.Read()) list.Add(MapToProduct(reader));
-
+            while (r.Read()) list.Add(Map(r));
             _db.CloseConnection();
+
             return list;
         }
 
-        // =========================
+        // ===============================
         // SEARCH
-        // =========================
+        // ===============================
         public List<Product> SearchProducts(string keyword)
         {
             List<Product> list = new();
 
-            string sql = @"SELECT id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
-                           FROM products
-                           WHERE name LIKE '%' + @kw + '%'";
+            string sql = BaseSelectQuery + @"
+                WHERE p.is_active = 1
+                AND (p.name LIKE @kw OR p.description LIKE @kw)
+                ORDER BY p.created_at DESC";
 
             _db.OpenConnection();
             using var cmd = new SqlCommand(sql, _db.GetConnection());
-            cmd.Parameters.AddWithValue("@kw", keyword);
-            using var reader = cmd.ExecuteReader();
+            cmd.Parameters.AddWithValue("@kw", "%" + keyword + "%");
+            using var r = cmd.ExecuteReader();
 
-            while (reader.Read()) list.Add(MapToProduct(reader));
-
+            while (r.Read()) list.Add(Map(r));
             _db.CloseConnection();
             return list;
         }
 
-        // =========================
+        // ===============================
         // PAGINATION
-        // =========================
-        public List<Product> GetProducts_Pagination(int page, int pageSize)
+        // ===============================
+        public List<Product> GetProducts_Pagination(int page, int pageSize, int? categoryId, string sort)
         {
             List<Product> list = new();
             int skip = (page - 1) * pageSize;
 
-            string sql = @$"
-                SELECT id, category_id, name, description, price, stock_quantity, image_url, is_active, created_at
-                FROM products
-                ORDER BY created_at DESC
-                OFFSET {skip} ROWS FETCH NEXT {pageSize} ROWS ONLY";
+            string sortQuery = sort switch
+            {
+                "price_asc" => " ORDER BY p.price ASC ",
+                "price_desc" => " ORDER BY p.price DESC ",
+                "name_asc" => " ORDER BY p.name ASC ",
+                "name_desc" => " ORDER BY p.name DESC ",
+                _ => " ORDER BY p.created_at DESC "
+            };
+
+            string sql = BaseSelectQuery + @"
+                WHERE p.is_active = 1 "
+                + (categoryId.HasValue ? " AND p.category_id = @cat " : "") +
+                sortQuery +
+                $" OFFSET {skip} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 
             _db.OpenConnection();
             using var cmd = new SqlCommand(sql, _db.GetConnection());
-            using var reader = cmd.ExecuteReader();
 
-            while (reader.Read()) list.Add(MapToProduct(reader));
+            if (categoryId.HasValue)
+                cmd.Parameters.AddWithValue("@cat", categoryId.Value);
+
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) list.Add(Map(r));
 
             _db.CloseConnection();
             return list;
         }
 
-        public int GetTotalProducts()
+        public int GetTotalProducts(int? categoryId)
         {
-            string sql = "SELECT COUNT(*) FROM products";
+            string sql = "SELECT COUNT(*) FROM products WHERE is_active = 1";
+
+            if (categoryId.HasValue)
+                sql += " AND category_id = @cat";
 
             _db.OpenConnection();
             using var cmd = new SqlCommand(sql, _db.GetConnection());
+            if (categoryId.HasValue)
+                cmd.Parameters.AddWithValue("@cat", categoryId);
+
             int total = (int)cmd.ExecuteScalar();
             _db.CloseConnection();
 
             return total;
-        }
-
-        // =========================
-        // MAPPING FUNCTION
-        // =========================
-        private Product MapToProduct(SqlDataReader r)
-        {
-            return new Product
-            {
-                Id = r.GetInt32(0),
-                CategoryId = r.IsDBNull(1) ? null : r.GetInt32(1),
-                Name = r.GetString(2),
-                Description = r.IsDBNull(3) ? null : r.GetString(3),
-                Price = r.GetDecimal(4),
-                StockQuantity = r.IsDBNull(5) ? 0 : r.GetInt32(5),
-                ImageUrl = r.IsDBNull(6) ? null : r.GetString(6),
-                IsActive = r.GetBoolean(7),
-                CreatedAt = r.GetDateTime(8)
-            };
         }
     }
 }

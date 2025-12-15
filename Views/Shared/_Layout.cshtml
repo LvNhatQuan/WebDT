@@ -6,10 +6,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>@ViewData["Title"] - DT Shop</title>
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap (local) -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebD_T.styles.css" asp-append-version="true" />
 
     <style>
         body {
@@ -33,72 +36,91 @@
 
 <body>
 
-    <!-- NAVIGATION BAR -->
+    <!-- NAVBAR -->
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
             <div class="container">
-                <a class="navbar-brand" href="/">DT Shop</a>
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    DT Shop
+                </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="mainNav">
 
-                    <!-- MENU Dynamic (MenuDynamicViewComponent) -->
+                    <!-- MENU DYNAMIC -->
                     @await Component.InvokeAsync("MenuDynamic")
 
-                    <ul class="navbar-nav ms-auto">
-                        <!-- User login status -->
+                    <ul class="navbar-nav ms-auto align-items-center">
+
+                        <!-- LOGIN STATUS -->
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
-                                <span class="nav-link">👋 Xin chào, @User.Identity.Name</span>
+                                <span class="nav-link">
+                                    👋 Xin chào, @User.Identity.Name
+                                </span>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-danger" href="/Account/Logout">Đăng xuất</a>
+                                <a class="nav-link text-danger"
+                                   asp-controller="Account"
+                                   asp-action="Logout">
+                                    Đăng xuất
+                                </a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link" href="/Account/Login">Đăng nhập</a>
+                                <a class="nav-link"
+                                   asp-controller="Account"
+                                   asp-action="Login">
+                                    Đăng nhập
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/Account/Register">Đăng ký</a>
+                                <a class="nav-link"
+                                   asp-controller="Account"
+                                   asp-action="Register">
+                                    Đăng ký
+                                </a>
                             </li>
                         }
 
-                        <!-- Cart icon -->
+                        <!-- CART -->
                         <li class="nav-item ms-3">
-                            <a href="/Cart" class="btn btn-outline-primary">
+                            <a asp-controller="Cart"
+                               asp-action="Index"
+                               class="btn btn-outline-primary position-relative">
                                 🛒 Giỏ hàng
                             </a>
                         </li>
-                    </ul>
 
+                    </ul>
                 </div>
             </div>
         </nav>
     </header>
-
 
     <!-- MAIN CONTENT -->
     <main class="container mt-4">
         @RenderBody()
     </main>
 
-
     <!-- FOOTER -->
-    <footer class="text-center text-muted py-4 mt-5">
+    <footer class="text-center text-muted py-4 mt-5 border-top">
         © 2025 DT Group. All rights reserved.
     </footer>
 
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JS -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
     @RenderSection("Scripts", required: false)
-
 </body>
 </html>

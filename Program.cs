@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // MVC
 builder.Services.AddControllersWithViews();
 
-// Đăng ký DAL dùng bảng users
+// Register DAL
 builder.Services.AddScoped<UserDAL>();
 
 // Authentication (Cookie)
@@ -20,6 +20,15 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // Authorization
 builder.Services.AddAuthorization();
 
+// FIX SESSION — GIỮ 20 PHÚT
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(20);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
@@ -27,18 +36,19 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication();   // <-- bắt buộc phải có
-app.UseAuthorization();    // <-- bắt buộc phải có
+app.UseAuthentication();
+app.UseAuthorization();
 
-// Admin Area
+app.UseSession();
+
+// Admin area
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
-// Route mặc định
+// Default
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Chạy ứng dụng
 app.Run();

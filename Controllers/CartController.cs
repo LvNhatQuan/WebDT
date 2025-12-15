@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WebDT.DAL;
-using WebDT.Database;
+using WebDT.Helper;
 using WebDT.Models;
 
 namespace WebDT.Controllers
@@ -10,142 +11,62 @@ namespace WebDT.Controllers
     {
         private readonly ProductDAL _productDal = new ProductDAL();
         private readonly UserDAL _userDal = new UserDAL();
-        private readonly DbConnect _db = new DbConnect();
+        private readonly CartDAL _cartDal = new CartDAL();
+        private readonly AddressDAL _addressDal = new AddressDAL();
 
-        // =========================
-        // 1. XEM GIỎ HÀNG
-        // =========================
+        public List<CartItem> Cart =>
+            HttpContext.Session.Get<List<CartItem>>(MyConst.CART_KEY)
+            ?? new List<CartItem>();
+
         public IActionResult Index()
         {
-            int userId = GetUserId();
-            List<CartItem> items = GetCartItems(userId);
-            return View(items);
+            return View(Cart);
         }
 
-        // =========================
-        // 2. THÊM SẢN PHẨM VÀO GIỎ
-        // =========================
-        public IActionResult Add(int productId, int qty = 1)
+        public IActionResult AddToCart(int id, int quantity = 1)
         {
-            int userId = GetUserId();
-
-            _db.openConnection();
-
-            using (var cmd = new SqlCommand(@"
-                IF EXISTS(SELECT 1 FROM cart WHERE customerId=@uid AND productId=@pid)
-                    UPDATE cart SET quantity = quantity + @qty
-                    WHERE customerId=@uid AND productId=@pid
-                ELSE
-                    INSERT INTO cart(customerId, productId, quantity, createAt)
-                    VALUES(@uid, @pid, @qty, GETDATE())",
-                _db.getConnecttion()))
+            var claim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim == null)
             {
-                cmd.Parameters.AddWithValue("@uid", userId);
-                cmd.Parameters.AddWithValue("@pid", productId);
-                cmd.Parameters.AddWithValue("@qty", qty);
-
-                cmd.ExecuteNonQuery();
-            }
-
-            _db.closeConnection();
-
-            return RedirectToAction("Index");
-        }
-
-        // =========================
-        // 3. UPDATE SỐ LƯỢNG TRONG GIỎ
-        // =========================
-        public IActionResult Update(int id, int qty)
-        {
-            _db.openConnection();
-
-            using (var cmd = new SqlCommand(
-                "UPDATE cart SET quantity=@qty WHERE id=@id",
-                _db.getConnecttion()))
-            {
-                cmd.Parameters.AddWithValue("@qty", qty);
-                cmd.Parameters.AddWithValue("@id", id);
-                cmd.ExecuteNonQuery();
-            }
-
-            _db.closeConnection();
-
-            return RedirectToAction("Index");
-        }
-
-        // =========================
-        // 4. XÓA SẢN PHẨM KHỎI GIỎ
-        // =========================
-        public IActionResult Delete(int id)
-        {
-            _db.openConnection();
-
-            using (var cmd = new SqlCommand(
-                "DELETE FROM cart WHERE id=@id",
-                _db.getConnecttion()))
-            {
-                cmd.Parameters.AddWithValue("@id", id);
-                cmd.ExecuteNonQuery();
-            }
-
-            _db.closeConnection();
-
-            return RedirectToAction("Index");
-        }
-
-        // =========================
-        // HÀM PHỤ — LẤY USER ID
-        // =========================
-        private int GetUserId()
-        {
-            string email = User.Identity?.Name;
-            var user = _userDal.GetUserByEmail(email);
-            return user.Id;
-        }
-
-        // =========================
-        // HÀM PHỤ — LẤY GIỎ HÀNG
-        // =========================
-        private List<CartItem> GetCartItems(int userId)
-        {
-            var list = new List<CartItem>();
-
-            _db.openConnection();
-
-            using (var cmd = new SqlCommand(@"
-                SELECT 
-                    c.id AS CartId,
-                    p.id AS ProductId,
-                    p.name,
-                    p.price,
-                    p.image_url,
-                    c.quantity
-                FROM cart c
-                JOIN products p ON p.id = c.productId
-                WHERE c.customerId = @uid",
-                _db.getConnecttion()))
-            {
-                cmd.Parameters.AddWithValue("@uid", userId);
-
-                using (var reader = cmd.ExecuteReader())
+                return Json(new
                 {
-                    while (reader.Read())
-                    {
-                        list.Add(new CartItem
-                        {
-                            IdProduct = (int)reader["ProductId"],
-                            Name = reader["name"].ToString(),
-                            Img = reader["image_url"].ToString(),
-                            Price = Convert.ToInt32(reader["price"]),
-                            Quantity = Convert.ToInt32(reader["quantity"])
-                        });
-                    }
-                }
+                    success = false,
+                    message = "Vui lòng đăng nhập.",
+                    redirectUrl = "/Account/Login"
+                });
             }
 
-            _db.closeConnection();
+            var cart = Cart;
 
-            return list;
+            var item = cart.SingleOrDefault(p => p.IdProduct == id);
+            Product p = _productDal.GetProductById(id);
+
+            if (item == null)
+            {
+                item = new CartItem
+                {
+                    IdProduct = p.Id,
+                    Name = p.Name,
+                    Img = p.Image_url,
+                    Price = p.Price,
+                    Discount = p.Discount,
+                    Quantity = quantity
+                };
+                cart.Add(item);
+            }
+            else
+            {
+                item.Quantity += quantity;
+            }
+
+            HttpContext.Session.Set(MyConst.CART_KEY, cart);
+
+            return Json(new
+            {
+                success = true,
+                cartCount = cart.Sum(x => x.Quantity),
+                cartTotal = cart.Sum(x => x.Total)
+            });
         }
     }
 }

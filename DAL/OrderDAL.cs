@@ -8,64 +8,95 @@ namespace WebDT.DAL
     {
         private readonly DbConnect db = new DbConnect();
 
-        // ============================
-        // 1) TẠO ĐƠN (trả về orderId)
-        // ============================
-        public int CreateOrder(int userId, int? couponId, decimal subTotal, decimal shippingFee, decimal discount, decimal grandTotal, string address)
+        // =====================================================
+        // CREATE ORDER + ORDER ITEMS (TRANSACTION)
+        // =====================================================
+        public int CreateOrder(
+            int userId,
+            int? couponId,
+            List<CartItem> cart,
+            decimal shippingFee,
+            decimal discount,
+            string address
+        )
         {
+            if (cart == null || cart.Count == 0)
+                return -1;
+
             db.openConnection();
+            var tran = db.getConnecttion().BeginTransaction();
 
-            string sql = @"
-                INSERT INTO orders (user_id, coupon_id, sub_total, shipping_fee, discount_amount, grand_total, shipping_address)
-                OUTPUT INSERTED.id
-                VALUES (@uid, @cid, @sub, @ship, @disc, @grand, @addr)";
+            try
+            {
+                decimal subTotal = cart.Sum(x => x.Total);
+                decimal grandTotal = subTotal + shippingFee - discount;
 
-            using var cmd = new SqlCommand(sql, db.getConnecttion());
-            cmd.Parameters.AddWithValue("@uid", userId);
-            cmd.Parameters.AddWithValue("@cid", (object)couponId ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@sub", subTotal);
-            cmd.Parameters.AddWithValue("@ship", shippingFee);
-            cmd.Parameters.AddWithValue("@disc", discount);
-            cmd.Parameters.AddWithValue("@grand", grandTotal);
-            cmd.Parameters.AddWithValue("@addr", address);
+                // 1️⃣ INSERT ORDER
+                string sqlOrder = @"
+                    INSERT INTO orders
+                    (user_id, coupon_id, sub_total, shipping_fee, discount_amount, grand_total, shipping_address, order_date)
+                    OUTPUT INSERTED.id
+                    VALUES
+                    (@uid, @cid, @sub, @ship, @disc, @grand, @addr, GETDATE())";
 
-            int orderId = (int)cmd.ExecuteScalar();
-            db.closeConnection();
+                int orderId;
+                using (var cmd = new SqlCommand(sqlOrder, db.getConnecttion(), tran))
+                {
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    cmd.Parameters.AddWithValue("@cid", (object)couponId ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@sub", subTotal);
+                    cmd.Parameters.AddWithValue("@ship", shippingFee);
+                    cmd.Parameters.AddWithValue("@disc", discount);
+                    cmd.Parameters.AddWithValue("@grand", grandTotal);
+                    cmd.Parameters.AddWithValue("@addr", address ?? "");
 
-            return orderId;
+                    orderId = Convert.ToInt32(cmd.ExecuteScalar());
+                }
+
+                // 2️⃣ INSERT ORDER ITEMS
+                string sqlItem = @"
+                    INSERT INTO order_items
+                    (order_id, product_id, quantity, price, total_price)
+                    VALUES
+                    (@oid, @pid, @qty, @price, @total)";
+
+                foreach (var item in cart)
+                {
+                    using var cmd = new SqlCommand(sqlItem, db.getConnecttion(), tran);
+                    cmd.Parameters.AddWithValue("@oid", orderId);
+                    cmd.Parameters.AddWithValue("@pid", item.IdProduct);
+                    cmd.Parameters.AddWithValue("@qty", item.Quantity);
+                    cmd.Parameters.AddWithValue("@price", item.Price);
+                    cmd.Parameters.AddWithValue("@total", item.Total);
+
+                    cmd.ExecuteNonQuery();
+                }
+
+                tran.Commit();
+                return orderId;
+            }
+            catch
+            {
+                tran.Rollback();
+                return -1;
+            }
+            finally
+            {
+                db.closeConnection();
+            }
         }
 
-        // ============================
-        // 2) THÊM SẢN PHẨM VÀO order_items
-        // ============================
-        public void AddOrderItem(int orderId, int productId, int qty, decimal price)
-        {
-            db.openConnection();
-
-            string sql = @"
-                INSERT INTO order_items(order_id, product_id, quantity, price, total_price)
-                VALUES(@oid, @pid, @qty, @price, @total)";
-
-            using var cmd = new SqlCommand(sql, db.getConnecttion());
-            cmd.Parameters.AddWithValue("@oid", orderId);
-            cmd.Parameters.AddWithValue("@pid", productId);
-            cmd.Parameters.AddWithValue("@qty", qty);
-            cmd.Parameters.AddWithValue("@price", price);
-            cmd.Parameters.AddWithValue("@total", qty * price);
-
-            cmd.ExecuteNonQuery();
-            db.closeConnection();
-        }
-
-        // ============================
-        // 3) LẤY ĐƠN HÀNG THEO ID
-        // ============================
+        // =====================================================
+        // GET ORDER BY ID
+        // =====================================================
         public OrderModel? GetOrderById(int orderId)
         {
             db.openConnection();
             OrderModel? order = null;
 
-            using (var cmd = new SqlCommand("SELECT * FROM orders WHERE id=@id", db.getConnecttion()))
+            string sql = "SELECT * FROM orders WHERE id = @id";
+
+            using (var cmd = new SqlCommand(sql, db.getConnecttion()))
             {
                 cmd.Parameters.AddWithValue("@id", orderId);
 
@@ -75,13 +106,15 @@ namespace WebDT.DAL
                     order = new OrderModel
                     {
                         Id = Convert.ToInt32(r["id"]),
-                        UserId = r["user_id"] != DBNull.Value ? Convert.ToInt32(r["user_id"]) : 0,
-                        CouponId = r["coupon_id"] != DBNull.Value ? Convert.ToInt32(r["coupon_id"]) : 0,
+                        UserId = Convert.ToInt32(r["user_id"]),
+                        CouponId = r["coupon_id"] == DBNull.Value
+                            ? null
+                            : Convert.ToInt32(r["coupon_id"]),
                         SubTotal = Convert.ToDecimal(r["sub_total"]),
                         ShippingFee = Convert.ToDecimal(r["shipping_fee"]),
                         Discount = Convert.ToDecimal(r["discount_amount"]),
                         GrandTotal = Convert.ToDecimal(r["grand_total"]),
-                        ShippingAddress = r["shipping_address"].ToString(),
+                        ShippingAddress = r["shipping_address"]?.ToString(),
                         OrderDate = Convert.ToDateTime(r["order_date"])
                     };
                 }
@@ -91,16 +124,22 @@ namespace WebDT.DAL
             return order;
         }
 
-        // ============================
-        // 4) LẤY SẢN PHẨM TRONG ĐƠN
-        // ============================
+        // =====================================================
+        // GET ORDER ITEMS
+        // =====================================================
         public List<OrderItemModel> GetItems(int orderId)
         {
             List<OrderItemModel> items = new();
             db.openConnection();
 
             string sql = @"
-                SELECT oi.*, p.name, p.image_url
+                SELECT 
+                    oi.product_id,
+                    oi.quantity,
+                    oi.price,
+                    oi.total_price,
+                    p.name,
+                    p.image_url
                 FROM order_items oi
                 JOIN products p ON p.id = oi.product_id
                 WHERE oi.order_id = @oid";
