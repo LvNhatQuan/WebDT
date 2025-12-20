@@ -3,47 +3,56 @@
     ViewData["Title"] = "Đăng ký";
 }
 
-<h2>Đăng ký tài khoản</h2>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-center text-danger fw-bold mb-4">ĐĂNG KÝ TÀI KHOẢN MỚI</h3>
 
-@if (TempData["Error"] != null)
-{
-    <div style="color:red; margin-bottom:10px;">
-        @TempData["Error"]
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger text-center">
+                            @TempData["Error"]
+                        </div>
+                    }
+
+                    <form method="post" action="/Account/Register">
+                        <div class="mb-3">
+                            <label for="Username" class="form-label">Tên đăng nhập</label>
+                            <input type="text" class="form-control" id="Username" name="Username" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="Email" name="Email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Password" class="form-label">Mật khẩu</label>
+                            <input type="password" class="form-control" id="Password" name="Password" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="FullName" class="form-label">Họ và tên</label>
+                            <input type="text" class="form-control" id="FullName" name="FullName" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="PhoneNumber" class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" id="PhoneNumber" name="PhoneNumber" required>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-danger">Đăng ký</button>
+                        </div>
+
+                        <div class="text-center">
+                            <a href="/Account/Login" class="text-decoration-none">Quay lại đăng nhập</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-}
-
-<form method="post" action="/Account/Register" style="max-width: 300px;">
-    <div>
-        <label>Username</label><br />
-        <input type="text" name="Username" required style="width:100%; padding:5px;" />
-    </div>
-
-    <div style="margin-top:10px;">
-        <label>Email</label><br />
-        <input type="email" name="Email" required style="width:100%; padding:5px;" />
-    </div>
-
-    <div style="margin-top:10px;">
-        <label>Password</label><br />
-        <input type="password" name="Password" required style="width:100%; padding:5px;" />
-    </div>
-
-    <div style="margin-top:10px;">
-        <label>Full name</label><br />
-        <input type="text" name="FullName" required style="width:100%; padding:5px;" />
-    </div>
-
-    <div style="margin-top:10px;">
-        <label>Phone</label><br />
-        <input type="text" name="PhoneNumber" required style="width:100%; padding:5px;" />
-    </div>
-
-    <button type="submit"
-            style="margin-top:15px; width:100%; padding:8px; background:green; color:white; border:none;">
-        Đăng ký
-    </button>
-
-    <div style="margin-top:10px;">
-        <a href="/Account/Login">Quay lại đăng nhập</a>
-    </div>
-</form>
+</div>

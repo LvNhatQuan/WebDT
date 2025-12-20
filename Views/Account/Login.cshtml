@@ -2,32 +2,41 @@
     ViewData["Title"] = "Đăng nhập";
 }
 
-<h2>Đăng nhập</h2>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-center text-danger fw-bold mb-4">ĐĂNG NHẬP</h3>
 
-@if (TempData["Error"] != null)
-{
-    <div style="color:red; margin-bottom:10px;">
-        @TempData["Error"]
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger text-center">
+                            @TempData["Error"]
+                        </div>
+                    }
+
+                    <form method="post" action="/Account/Login">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mật khẩu</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-danger">Đăng nhập</button>
+                        </div>
+
+                        <div class="text-center">
+                            <a href="/Account/Register" class="text-decoration-none">Chưa có tài khoản? Đăng ký</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-}
-
-<form method="post" action="/Account/Login" style="max-width: 300px;">
-    <div>
-        <label>Email</label><br />
-        <input type="email" name="email" required style="width:100%; padding:5px;" />
-    </div>
-
-    <div style="margin-top:10px;">
-        <label>Password</label><br />
-        <input type="password" name="password" required style="width:100%; padding:5px;" />
-    </div>
-
-    <button type="submit"
-            style="margin-top:15px; width:100%; padding:8px; background:#007bff; color:white; border:none;">
-        Đăng nhập
-    </button>
-
-    <div style="margin-top:10px;">
-        <a href="/Account/Register">Chưa có tài khoản? Đăng ký</a>
-    </div>
-</form>
+</div>

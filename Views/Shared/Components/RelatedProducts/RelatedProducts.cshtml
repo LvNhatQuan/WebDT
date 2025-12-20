@@ -1,0 +1,88 @@
+﻿@model List<WebDT.Models.Product>
+
+@if (Model == null || !Model.Any())
+{
+    <p>Không có sản phẩm cùng loại với sản phẩm bạn đang xem</p>
+}
+else
+{
+    <fieldset class="custom-fieldset mt-5">
+        <legend>SẢN PHẨM CÙNG LOẠI</legend>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3">
+            @foreach (var p in Model)
+
+            {
+
+                <div class="col">
+                    <div class="card h-100 border1 background1 shadow-sm product-card rounded-0">
+
+                        <div class="p-2 overflow-hidden">
+                            <a asp-controller="Product"
+                            asp-action="Detail"
+                            asp-route-id="@p.Id"
+                               class="d-block text-decoration-none zoom-container">
+                                <img src="~/Images/SanPham/@p.ImageUrl"
+                                     class="w-100 zoom-img"
+                                     style="height: 180px; object-fit: contain; mix-blend-mode: multiply;"
+                                     alt="@p.Name"
+                                     onerror="this.src='/Images/yen_sua.jpg'" />
+                            </a>
+                        </div>
+
+                        <div class="card-body d-flex flex-column text-center pt-0">
+                            <h5 class="card-title fw-bold text-uppercase mb-2 text-truncate" style="font-size: 0.9rem;">
+                                @p.Name
+                            </h5>
+                            <div class="d-flex justify-content-center flex-lg-wrap">
+                                @if (p.Discount > 0)
+                                {
+                                    <span class="fw-bold text-danger me-2">
+                                        @((p.Price - (p.Price * p.Discount / 100)).ToString("#,##0 đ"))
+                                    </span>
+                                    <del class="text-muted me-2">
+                                        @p.Price.ToString("#,##0")
+                                    </del>
+                                    <span class="badge bg-danger">
+                                        -@p.Discount%
+                                    </span>
+                                }
+                                else
+                                {
+                                    <p class="text-dark fs-6 fw-bold mb-0">
+                                        @p.Price.ToString("#,##0 đ")
+                                    </p>
+                                }
+                            </div>
+
+
+                            <form asp-controller="Cart"
+                                  asp-action="AddToCart"
+                                  method="post"
+                                  class="d-flex gap-2">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="productId" value="@p.Id" />
+                                <input type="hidden" name="quantity" value="1" />
+                                <div class="d-flex w-100 gap-1 mt-auto">
+                                    <button type="submit"
+                                            class="btn btn1 btn-outline-dark rounded-pill btn-sm flex-fill text-nowrap mt-2 px-1">
+                                        <span style="font-size: 13px; font-weight: bold;">Thêm vào giỏ</span>
+                                    </button>
+
+                                    <a asp-controller="Product"
+                                       asp-action="Detail"
+                                       asp-route-id="@p.Id"
+                                       class="btn btn1 btn-outline-dark rounded-pill btn-sm flex-fill text-nowrap mt-2 px-1">
+                                        <span style="font-size: 13px; font-weight: bold;">Chi tiết</span>
+                                    </a>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </fieldset>
+}

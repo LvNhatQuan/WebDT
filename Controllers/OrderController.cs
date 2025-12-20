@@ -14,67 +14,111 @@ namespace WebDT.Controllers
         private readonly AddressDAL _addressDal = new AddressDAL();
         private readonly CouponDAL _couponDal = new CouponDAL();
 
+        private const decimal SHIPPING_FEE = 15000;
+
+        // ================== CHECKOUT ==================
+        [HttpGet]
         public IActionResult Checkout()
         {
-            var cart = HttpContext.Session.Get<List<CartItem>>(MyConst.CART_KEY)
-                       ?? new List<CartItem>();
+            var cart = HttpContext.Session
+                .Get<List<CartItem>>(MyConst.CART_KEY)
+                ?? new List<CartItem>();
 
             if (!cart.Any())
                 return RedirectToAction("Index", "Cart");
 
-            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            int userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!
+            );
+
             var defaultAddress = _addressDal.GetDefaultAddressString(userId);
 
             var vm = new CheckoutViewModel
             {
                 CartItems = cart,
-                ShippingFee = 15000,
-                Discount = 0,
+                ShippingFee = SHIPPING_FEE,
+                Discount = 0, // hiển thị tạm, server sẽ tính lại
                 ShippingAddress = defaultAddress
             };
 
             return View(vm);
         }
 
+        // ================== PLACE ORDER ==================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult PlaceOrder(string shippingAddress, int? couponId)
+        public IActionResult PlaceOrder(
+            string receiverName,
+            string receiverPhone,
+            string shippingAddress,
+            int? couponId
+        )
         {
-            var cart = HttpContext.Session.Get<List<CartItem>>(MyConst.CART_KEY)
-                       ?? new List<CartItem>();
+            var cart = HttpContext.Session
+                .Get<List<CartItem>>(MyConst.CART_KEY)
+                ?? new List<CartItem>();
 
             if (!cart.Any())
                 return RedirectToAction("Index", "Cart");
 
-            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            // Nếu bạn muốn couponId áp cho toàn đơn -> chuyển thành discount_amount
-            decimal discountAmount = 0;
-            if (couponId.HasValue)
+            // validate input
+            if (string.IsNullOrWhiteSpace(receiverName) ||
+                string.IsNullOrWhiteSpace(receiverPhone) ||
+                string.IsNullOrWhiteSpace(shippingAddress))
             {
-                discountAmount = _couponDal.Apply(couponId.Value, cart.Sum(x => x.Total));
+                TempData["Error"] = "Vui lòng nhập đầy đủ thông tin nhận hàng.";
+                return RedirectToAction("Checkout");
             }
 
+            int userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!
+            );
+
+            // ================== XỬ LÝ COUPON (SERVER) ==================
+            decimal discountAmount = 0;
+
+            if (couponId.HasValue)
+            {
+                // gán coupon cho từng item (để insert order_items)
+                foreach (var item in cart)
+                    item.CouponId = couponId.Value;
+
+                discountAmount = _couponDal.Apply(
+                    couponId.Value,
+                    cart.Sum(x => x.Total)
+                );
+            }
+
+            // ================== TẠO ĐƠN HÀNG ==================
             int orderId = _orderDal.CreateOrder(
                 userId: userId,
                 cart: cart,
-                shippingFee: 15000,
+                shippingFee: SHIPPING_FEE,
                 discountAmount: discountAmount,
-                address: shippingAddress ?? ""
+                address: shippingAddress,
+                receiverName: receiverName,
+                receiverPhone: receiverPhone
             );
 
             if (orderId <= 0)
+            {
+                TempData["Error"] = "Đặt hàng thất bại. Vui lòng thử lại.";
                 return RedirectToAction("Checkout");
+            }
 
+            // clear cart
             HttpContext.Session.Remove(MyConst.CART_KEY);
 
             return RedirectToAction("Success", new { id = orderId });
         }
 
+        // ================== SUCCESS ==================
+        [HttpGet]
         public IActionResult Success(int id)
         {
             var order = _orderDal.GetOrderById(id);
-            if (order == null) return RedirectToAction("Index", "Home");
+            if (order == null)
+                return RedirectToAction("Index", "Home");
 
             order.Items = _orderDal.GetItems(id);
             return View(order);

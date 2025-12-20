@@ -1,0 +1,175 @@
+﻿@{
+    ViewData["Title"] = "Liên hệ";
+}
+
+<!-- ================= CUSTOMER CARE ================= -->
+<div class="container my-5">
+    <div class="row align-items-center g-4">
+
+        <!-- IMAGE -->
+        <div class="col-12 col-md-4 text-center">
+            <img src="~/img/plane_line.png"
+                 class="img-fluid"
+                 style="max-height:380px; object-fit:contain; mix-blend-mode: multiply;"
+                 alt="DT Customer Care" />
+        </div>
+
+        <!-- CONTENT -->
+        <div class="col-12 col-md-8 bg-light rounded-3 p-4 shadow-sm">
+
+            <h2 class="fw-bold text-center mb-4" style="color:#00A85A;">
+                CHĂM SÓC KHÁCH HÀNG
+            </h2>
+
+            <div class="row g-4">
+
+                <!-- CALL -->
+                <div class="col-12 col-md-6 text-center">
+                    <img src="~/img/call_us.png"
+                         class="img-fluid mb-3"
+                         style="max-height:200px; object-fit:contain; mix-blend-mode: multiply;"
+                         alt="Call DT" />
+
+                    <h4 class="fw-bold">Gọi DT</h4>
+
+                    <p class="mb-1"><strong>Thứ 2 – Thứ 6</strong></p>
+                    <p class="text-muted">8h00 – 11h00 | 14h00 – 17h00</p>
+
+                    <p class="mb-1"><strong>Thứ 7, CN & Lễ</strong></p>
+                    <p class="text-muted">9h00 – 11h00 | 15h00 – 17h00</p>
+
+                    <p class="fw-bold fst-italic fs-5 mb-1">Đặt hàng: 0833 416 868</p>
+                    <p class="fw-bold fst-italic fs-5">Tư vấn: 0847 236 868</p>
+                </div>
+
+                <!-- CHAT -->
+                <div class="col-12 col-md-6 text-center">
+                    <img src="~/img/chat_us.png"
+                         class="img-fluid mb-3"
+                         style="max-height:200px; object-fit:contain; mix-blend-mode: multiply;"
+                         alt="Chat DT" />
+
+                    <h4 class="fw-bold">Chat DT</h4>
+
+                    <p class="fw-bold mb-1">Facebook</p>
+                    <a href="https://www.facebook.com/yensaoDTNest.official"
+                       target="_blank"
+                       class="d-block text-decoration-none text-dark fst-italic fs-6 mb-3">
+                        facebook.com/yensaoDTNest.official
+                    </a>
+
+                    <p class="fw-bold mb-1">Zalo</p>
+                    <p class="fw-bold fst-italic fs-5">0258 2226 999</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MAP ================= -->
+<div class="container my-5">
+    <h4 class="fw-bold text-uppercase mb-3" style="color:#F1A3A2;">
+        <i class="fa-solid fa-map-location-dot me-2"></i>
+        Địa chỉ của chúng tôi
+    </h4>
+
+    <div class="ratio ratio-21x9 rounded-3 overflow-hidden shadow-sm border">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1949.1319805802732!2d109.16013986190507!3d12.298002568555507!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317043db5326a8dd%3A0xb9b6b6f956bc6d24!2zTmjDoCBtw6F5IFnhur9uIFPDoG8gRFVZIFRSQU5H!5e0!3m2!1svi!2s!4v1765974200218!5m2!1svi!2s"
+                style="border:0;"
+                allowfullscreen
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+    </div>
+
+    <p class="mt-3 fw-bold text-muted">
+        <i class="fa-solid fa-location-dot text-danger me-1"></i>
+        KCN Đắc Lộc, Vĩnh Phương, Nha Trang, Khánh Hòa 65000, Việt Nam
+    </p>
+</div>
+
+<!-- ================= CONTACT FORM ================= -->
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+
+            <div class="p-4 rounded-4 shadow-sm formlh">
+
+                <h4 class="fw-bold text-uppercase mb-4">
+                    Gửi thông tin liên hệ
+                </h4>
+
+                <form asp-controller="Contact" asp-action="Send" method="post">
+
+                    <input type="text"
+                           class="form-control rounded-pill mb-3 px-4"
+                           placeholder="Tiêu đề"
+                           name="Title"
+                           required />
+
+                    <input type="text"
+                           class="form-control rounded-pill mb-3 px-4"
+                           placeholder="Họ và tên"
+                           name="Name"
+                           required />
+
+                    <input type="text"
+                           class="form-control rounded-pill mb-3 px-4"
+                           placeholder="Số điện thoại"
+                           name="Phone"
+                           required />
+
+                    <textarea class="form-control rounded-4 mb-4 px-4 py-3"
+                              rows="4"
+                              placeholder="Nội dung"
+                              name="Content"
+                              required></textarea>
+
+                    <div class="d-flex justify-content-center gap-4">
+                        <button type="submit"
+                                class="btn btn-custom rounded-pill px-5 fw-bold">
+                            GỬI
+                        </button>
+                        <button type="reset"
+                                class="btn btn-custom rounded-pill px-5 fw-bold">
+                            HỦY
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-custom {
+        background-color: #DE5D6F;
+        border: none;
+        color: #000;
+        transition: 0.3s;
+        min-width: 140px;
+    }
+
+        .btn-custom:hover {
+            background-color: #c94658;
+            color: #fff;
+        }
+
+    .formlh {
+        background-color: #D7CAC8;
+        border: 2px solid #FFD4CD;
+    }
+
+    .form-control::placeholder {
+        color: #777;
+        font-weight: 500;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border: 2px solid #DE5D6F;
+    }
+</style>

@@ -17,36 +17,47 @@ namespace WebDT.Areas.Admin.DAL
             List<OrderAdmin> list = new();
 
             string sql = @"
-                SELECT 
-                    o.id,
-                    o.user_id,
-                    u.username,
-                    o.order_date,
-                    o.sub_total,
-                    o.shipping_fee,
-                    o.discount_amount,
-                    o.grand_total,
-                    o.shipping_address
-                FROM orders o
-                LEFT JOIN users u ON o.user_id = u.id
-                ORDER BY o.order_date DESC";
+SELECT 
+    o.id,
+    o.user_id,
+    u.username,
+    o.receiver_name,
+    o.receiver_phone,
+    o.order_date,
+    o.sub_total,
+    o.shipping_fee,
+    o.discount_amount,
+    o.grand_total,
+    o.shipping_address,
+    o.status
+FROM orders o
+LEFT JOIN users u ON o.user_id = u.id
+ORDER BY o.id DESC";
 
             using var cmd = new SqlCommand(sql, connect.getConnecttion());
-            var reader = cmd.ExecuteReader();
+            using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
             {
                 list.Add(new OrderAdmin
                 {
                     Id = (int)reader["id"],
-                    UserId = reader["user_id"] != DBNull.Value ? Convert.ToInt32(reader["user_id"]) : null,
+                    UserId = reader["user_id"] != DBNull.Value
+                        ? Convert.ToInt32(reader["user_id"])
+                        : null,
+
                     UserName = reader["username"]?.ToString(),
+
+                    ReceiverName = reader["receiver_name"]?.ToString() ?? "",
+                    ReceiverPhone = reader["receiver_phone"]?.ToString() ?? "",
+
                     OrderDate = Convert.ToDateTime(reader["order_date"]),
                     SubTotal = Convert.ToDecimal(reader["sub_total"]),
                     ShippingFee = Convert.ToDecimal(reader["shipping_fee"]),
                     DiscountAmount = Convert.ToDecimal(reader["discount_amount"]),
                     GrandTotal = Convert.ToDecimal(reader["grand_total"]),
-                    ShippingAddress = reader["shipping_address"].ToString()!
+                    ShippingAddress = reader["shipping_address"].ToString()!,
+                    Status = reader["status"]?.ToString() ?? ""
                 });
             }
 
@@ -63,37 +74,49 @@ namespace WebDT.Areas.Admin.DAL
             OrderAdmin? order = null;
 
             string sqlOrder = @"
-                SELECT 
-                    o.id,
-                    o.user_id,
-                    u.username,
-                    o.order_date,
-                    o.sub_total,
-                    o.shipping_fee,
-                    o.discount_amount,
-                    o.grand_total,
-                    o.shipping_address
-                FROM orders o
-                LEFT JOIN users u ON o.user_id = u.id
-                WHERE o.id = @Id";
+SELECT 
+    o.id,
+    o.user_id,
+    u.username,
+    o.receiver_name,
+    o.receiver_phone,
+    o.order_date,
+    o.sub_total,
+    o.shipping_fee,
+    o.discount_amount,
+    o.grand_total,
+    o.shipping_address,
+    o.status
+FROM orders o
+LEFT JOIN users u ON o.user_id = u.id
+WHERE o.id = @Id";
 
             using var cmd = new SqlCommand(sqlOrder, connect.getConnecttion());
             cmd.Parameters.AddWithValue("@Id", id);
-            var r = cmd.ExecuteReader();
+
+            using var r = cmd.ExecuteReader();
 
             if (r.Read())
             {
                 order = new OrderAdmin
                 {
                     Id = (int)r["id"],
-                    UserId = r["user_id"] != DBNull.Value ? Convert.ToInt32(r["user_id"]) : null,
+                    UserId = r["user_id"] != DBNull.Value
+                        ? Convert.ToInt32(r["user_id"])
+                        : null,
+
                     UserName = r["username"]?.ToString(),
+
+                    ReceiverName = r["receiver_name"]?.ToString() ?? "",
+                    ReceiverPhone = r["receiver_phone"]?.ToString() ?? "",
+
                     OrderDate = Convert.ToDateTime(r["order_date"]),
                     SubTotal = Convert.ToDecimal(r["sub_total"]),
                     ShippingFee = Convert.ToDecimal(r["shipping_fee"]),
                     DiscountAmount = Convert.ToDecimal(r["discount_amount"]),
                     GrandTotal = Convert.ToDecimal(r["grand_total"]),
                     ShippingAddress = r["shipping_address"].ToString()!,
+                    Status = r["status"]?.ToString() ?? "",
                     Items = new List<OrderItemAdmin>()
                 };
             }
@@ -107,31 +130,34 @@ namespace WebDT.Areas.Admin.DAL
             }
 
             // ============================================
-            // LOAD DANH SÁCH SẢN PHẨM TRONG ĐƠN (order_items)
+            // LOAD DANH SÁCH SẢN PHẨM TRONG ĐƠN
             // ============================================
             string sqlItems = @"
-                SELECT 
-                    oi.id,
-                    oi.product_id,
-                    oi.quantity,
-                    oi.price,
-                    oi.total_price,
-                    p.name AS product_name
-                FROM order_items oi
-                LEFT JOIN products p ON oi.product_id = p.id
-                WHERE oi.order_id = @OrderId";
+SELECT 
+    oi.id,
+    oi.product_id,
+    oi.quantity,
+    oi.price,
+    oi.total_price,
+    p.name AS product_name
+FROM order_items oi
+LEFT JOIN products p ON oi.product_id = p.id
+WHERE oi.order_id = @OrderId";
 
             using var cmdItems = new SqlCommand(sqlItems, connect.getConnecttion());
             cmdItems.Parameters.AddWithValue("@OrderId", id);
 
-            var ri = cmdItems.ExecuteReader();
+            using var ri = cmdItems.ExecuteReader();
             while (ri.Read())
             {
                 order.Items.Add(new OrderItemAdmin
                 {
                     Id = (int)ri["id"],
                     OrderId = id,
-                    ProductId = ri["product_id"] != DBNull.Value ? Convert.ToInt32(ri["product_id"]) : null,
+                    ProductId = ri["product_id"] != DBNull.Value
+                        ? Convert.ToInt32(ri["product_id"])
+                        : null,
+
                     ProductName = ri["product_name"]?.ToString(),
                     Quantity = (int)ri["quantity"],
                     Price = Convert.ToDecimal(ri["price"]),
@@ -144,15 +170,15 @@ namespace WebDT.Areas.Admin.DAL
         }
 
         // ============================================
-        // CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (NẾU CÓ STATUS)
+        // CẬP NHẬT TRẠNG THÁI
         // ============================================
         public bool UpdateStatus(int id, string status)
         {
             connect.openConnection();
 
             string sql = "UPDATE orders SET status = @Status WHERE id = @Id";
-
             using var cmd = new SqlCommand(sql, connect.getConnecttion());
+
             cmd.Parameters.AddWithValue("@Id", id);
             cmd.Parameters.AddWithValue("@Status", status);
 
@@ -169,12 +195,15 @@ namespace WebDT.Areas.Admin.DAL
         {
             connect.openConnection();
 
-            using var cmd = new SqlCommand("DELETE FROM orders WHERE id = @Id", connect.getConnecttion());
+            using var cmd = new SqlCommand(
+                "DELETE FROM orders WHERE id = @Id",
+                connect.getConnecttion()
+            );
+
             cmd.Parameters.AddWithValue("@Id", id);
-
             int result = cmd.ExecuteNonQuery();
-            connect.closeConnection();
 
+            connect.closeConnection();
             return result > 0;
         }
 

@@ -18,26 +18,8 @@ namespace WebDT.Controllers
             ViewData["CategoryId"] = categoryId;
             ViewData["SortOrder"] = sortOrder;
 
-            // Trường hợp không filter → load nhanh toàn bộ (trang chủ / demo)
-            if (!categoryId.HasValue && string.IsNullOrEmpty(sortOrder))
-            {
-                var allProducts = _productDal.GetAllProducts();
-
-                return View(new ProductPagination
-                {
-                    Products = allProducts,
-                    CurrentPageIndex = 1,
-                    PageCount = 1
-                });
-            }
-
-            // Pagination
-            List<Product> products = _productDal.GetProducts_Pagination(
-                page,
-                pageSize,
-                categoryId,
-                sortOrder
-            );
+            // Sử dụng phương thức GetProducts mới (đã tích hợp sắp xếp)
+            var products = _productDal.GetProducts(page, pageSize, categoryId, sortOrder);
 
             int totalRows = _productDal.GetTotalProducts(categoryId);
             int pageCount = (int)Math.Ceiling((double)totalRows / pageSize);
@@ -68,18 +50,36 @@ namespace WebDT.Controllers
         // ============================
         // SEARCH
         // ============================
-        public IActionResult Search(string keyword)
+        public IActionResult Search(string keyword, int page = 1, string sortOrder = "")
         {
+            int pageSize = 6;
+
+            // Nếu keyword rỗng hoặc null, hiển thị tất cả sản phẩm
             if (string.IsNullOrWhiteSpace(keyword))
             {
-                ViewBag.Message = "Vui lòng nhập từ khóa để tìm kiếm.";
-                return View(new List<Product>());
+                // Redirect về trang Index với tất cả sản phẩm
+                return RedirectToAction("Index", new { page, sortOrder });
             }
 
-            var products = _productDal.SearchProducts(keyword);
-            ViewData["SearchKeyword"] = keyword;
+            // Lấy danh sách sản phẩm với phân trang và sắp xếp
+            var products = _productDal.SearchProducts(keyword, page, pageSize, sortOrder);
 
-            return View(products);
+            // Lấy tổng số kết quả
+            int totalRows = _productDal.GetTotalSearchResults(keyword);
+            int pageCount = (int)Math.Ceiling((double)totalRows / pageSize);
+
+            ViewData["SearchKeyword"] = keyword;
+            ViewData["SortOrder"] = sortOrder;
+
+            var model = new ProductPagination
+            {
+                Products = products,
+                CurrentPageIndex = page,
+                PageCount = pageCount,
+                TotalItems = totalRows
+            };
+
+            return View(model);
         }
 
         // ============================
@@ -102,6 +102,15 @@ namespace WebDT.Controllers
         {
             var items = _productDal.GetFeaturedProducts(8);
             return View(items);
+        }
+
+        // ============================
+        // SIMPLE SEARCH (for backward compatibility)
+        // ============================
+        public IActionResult SimpleSearch(string keyword)
+        {
+            var products = _productDal.SimpleSearch(keyword);
+            return View(products);
         }
     }
 }

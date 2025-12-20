@@ -1,8 +1,201 @@
-﻿@{
+﻿@using System.Globalization
+@{
     ViewData["Title"] = "Home Page";
+    var culture = CultureInfo.GetCultureInfo("vi-VN");
+
+    var featuredProducts = ViewBag.FeaturedProducts as List<WebDT.Models.Product>;
+    var bestSellerProducts = ViewBag.BestSellerProducts as List<WebDT.Models.Product>;
+    var categories = ViewBag.Categories;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="parent">
+
+    <!-- ================= HEADER / EMPTY ================= -->
+    <div class="div1"></div>
+
+    <!-- ================= BANNER SLIDER ================= -->
+    <div class="div2 mb-5">
+        <div id="homeBannerCarousel"
+             class="carousel slide"
+             data-bs-ride="carousel"
+             data-bs-interval="4000">
+
+            <div class="carousel-inner rounded shadow">
+
+                <div class="carousel-item active">
+                    <img src="@Url.Content("~/Images/banner1.jpg")"
+                         class="d-block w-100"
+                         alt="Banner 1">
+                </div>
+
+                <div class="carousel-item">
+                    <img src="@Url.Content("~/Images/banner2.jpg")"
+                         class="d-block w-100"
+                         alt="Banner 2">
+                </div>
+
+               @*  <div class="carousel-item">
+                    <img src="@Url.Content("~/Images/banner3.jpg")"
+                         class="d-block w-100"
+                         alt="Banner 3">
+                </div> *@
+            </div>
+
+            <button class="carousel-control-prev"
+                    type="button"
+                    data-bs-target="#homeBannerCarousel"
+                    data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+
+            <button class="carousel-control-next"
+                    type="button"
+                    data-bs-target="#homeBannerCarousel"
+                    data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= SẢN PHẨM NỔI BẬT ================= -->
+    <div class="div3 my-5">
+        <h2 class="text-center text-primary fw-bold mb-4">
+            🌟 SẢN PHẨM NỔI BẬT
+        </h2>
+
+        <div class="row justify-content-center">
+            @if (featuredProducts != null && featuredProducts.Any())
+            {
+                foreach (var item in featuredProducts)
+                {
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                        <div class="card h-100 shadow-sm product-card">
+
+                            <img src="@Url.Content("~/Images/SanPham/" + item.ImageUrl)"
+                                 onerror="this.onerror=null;this.src='@Url.Content("~/Images/no-image.png")';"
+                                 class="card-img-top"
+                                 style="height:200px;object-fit:cover;"
+                                 alt="@item.Name" />
+                            <div class="card-body text-center d-flex flex-column">
+                                <h6 class="card-title text-truncate"
+                                    title="@item.Name">
+                                    @item.Name
+                                </h6>
+
+                                <p class="text-danger fw-bold mb-2">
+                                    @string.Format(culture, "{0:N0} ₫", item.Price)
+                                </p>
+
+                                <div class="mt-auto d-flex justify-content-center gap-2">
+                                    <a asp-controller="Cart"
+                                       asp-action="AddToCart"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-success btn-sm">
+                                        Thêm vào giỏ
+                                    </a>
+
+                                    <a asp-controller="Product"
+                                       asp-action="Detail"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-outline-primary btn-sm">
+                                        Chi tiết
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-center text-muted">
+                    Chưa có sản phẩm nổi bật
+                </p>
+            }
+        </div>
+    </div>
+
+    <!-- ================= SẢN PHẨM BÁN CHẠY ================= -->
+    <div class="div3 my-5 bg-light py-4">
+        <h2 class="text-center text-success fw-bold mb-4">
+            🔥 SẢN PHẨM BÁN CHẠY
+        </h2>
+
+        <div class="row justify-content-center">
+            @if (bestSellerProducts != null && bestSellerProducts.Any())
+            {
+                foreach (var item in bestSellerProducts)
+                {
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                        <div class="card h-100 shadow-sm product-card">
+
+                            <img src="@Url.Content("~/Images/SanPham/" + item.ImageUrl)"
+                                 onerror="this.onerror=null;this.src='@Url.Content("~/Images/no-image.png")';"
+                                 class="card-img-top"
+                                 style="height:200px;object-fit:cover;"
+                                 alt="@item.Name" />
+
+                            <div class="card-body text-center d-flex flex-column">
+                                <h6 class="card-title text-truncate">
+                                    @item.Name
+                                </h6>
+
+                                <p class="text-danger fw-bold mb-2">
+                                    @string.Format(culture, "{0:N0} ₫", item.Price)
+                                </p>
+
+                                <div class="mt-auto d-flex justify-content-center gap-2">
+                                    <a asp-controller="Cart"
+                                       asp-action="AddToCart"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-success btn-sm">
+                                        Thêm
+                                    </a>
+
+                                    <a asp-controller="Product"
+                                       asp-action="Detail"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-outline-primary btn-sm">
+                                        Chi tiết
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- ================= CHỨNG NHẬN ================= -->
+    <div class="div4 text-center my-5">
+        <h2 class="text-danger fw-bold mb-4">
+            🏆 Chứng nhận chất lượng
+        </h2>
+
+        <div class="d-flex justify-content-center gap-4 flex-wrap">
+            <img src="@Url.Content("~/Images/chungnhan1.jpg")"
+                 class="rounded shadow"
+                 style="height:180px;" />
+
+            <img src="@Url.Content("~/Images/chungnhan2.jpg")"
+                 class="rounded shadow"
+                 style="height:180px;" />
+
+            <img src="@Url.Content("~/Images/chungnhan3.jpg")"
+                 class="rounded shadow"
+                 style="height:180px;" />
+        </div>
+    </div>
+
+    <!-- ================= FOOTER / EMPTY ================= -->
+    <div class="div5"></div>
+
 </div>
+
+<style>
+    .product-card:hover {
+        transform: translateY(-5px);
+        transition: 0.2s;
+    }
+</style>

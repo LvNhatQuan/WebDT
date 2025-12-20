@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebDT.Helper;
 using WebDT.Models;
+using WebDT.Helper;
 
 namespace WebDT.ViewComponents
 {
@@ -8,13 +8,13 @@ namespace WebDT.ViewComponents
     {
         public IViewComponentResult Invoke()
         {
-            var cart = HttpContext.Session.Get<List<CartItem>>(MyConst.CART_KEY) ?? new List<CartItem>();
+            var cart = HttpContext.Session
+                .Get<List<CartItem>>(MyConst.CART_KEY)
+                ?? new List<CartItem>();
 
-            return View(new CartModel()
-            {
-                Quantity = cart.Sum(p => p.Quantity),
-                Total = cart.Sum(p => p.Total)
-            });
+            int totalQuantity = cart.Sum(x => x.Quantity);
+
+            return View(totalQuantity);
         }
     }
 }

@@ -1,55 +1,53 @@
 ﻿using Microsoft.Data.SqlClient;
-using WebDT.Database;   // DbConnect
+using WebDT.Database;
 using WebDT.Areas.Admin.Models;
 
 namespace WebDT.Areas.Admin.DAL
 {
     public class CustomerAdminDAL
     {
-        private readonly DbConnect _db;
+        private readonly DbConnect _db = new DbConnect();
 
-        public CustomerAdminDAL()
-        {
-            _db = new DbConnect();
-        }
-
-        // Lấy danh sách khách hàng
+        // ===============================
+        // LẤY DANH SÁCH KHÁCH HÀNG
+        // ===============================
         public List<CustomerAdmin> GetAllCustomers()
         {
-            List<CustomerAdmin> list = new List<CustomerAdmin>();
+            var list = new List<CustomerAdmin>();
 
             string sql = @"SELECT id, username, email, full_name, phone_number, created_at
                            FROM users
                            WHERE role = 'customer'
                            ORDER BY created_at DESC";
 
-            using (SqlConnection con = _db.getConnecttion())
+            SqlConnection con = _db.getConnecttion();
+            _db.openConnection();
+
+            SqlCommand cmd = new SqlCommand(sql, con);
+            SqlDataReader rd = cmd.ExecuteReader();
+
+            while (rd.Read())
             {
-                _db.openConnection();
-
-                SqlCommand cmd = new SqlCommand(sql, con);
-                SqlDataReader rd = cmd.ExecuteReader();
-
-                while (rd.Read())
+                list.Add(new CustomerAdmin
                 {
-                    list.Add(new CustomerAdmin
-                    {
-                        Id = (int)rd["id"],
-                        Username = rd["username"].ToString(),
-                        Email = rd["email"].ToString(),
-                        FullName = rd["full_name"].ToString(),
-                        PhoneNumber = rd["phone_number"].ToString(),
-                        CreatedAt = Convert.ToDateTime(rd["created_at"])
-                    });
-                }
-
-                _db.closeConnection();
+                    Id = (int)rd["id"],
+                    Username = rd["username"].ToString(),
+                    Email = rd["email"].ToString(),
+                    FullName = rd["full_name"].ToString(),
+                    PhoneNumber = rd["phone_number"].ToString(),
+                    CreatedAt = Convert.ToDateTime(rd["created_at"])
+                });
             }
+
+            rd.Close();
+            _db.closeConnection();
 
             return list;
         }
 
-        // Lấy khách hàng theo ID
+        // ===============================
+        // LẤY KHÁCH HÀNG THEO ID
+        // ===============================
         public CustomerAdmin? GetCustomerById(int id)
         {
             CustomerAdmin? c = null;
@@ -58,35 +56,36 @@ namespace WebDT.Areas.Admin.DAL
                            FROM users
                            WHERE id = @id";
 
-            using (SqlConnection con = _db.getConnecttion())
+            SqlConnection con = _db.getConnecttion();
+            _db.openConnection();
+
+            SqlCommand cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            SqlDataReader rd = cmd.ExecuteReader();
+
+            if (rd.Read())
             {
-                _db.openConnection();
-
-                SqlCommand cmd = new SqlCommand(sql, con);
-                cmd.Parameters.AddWithValue("@id", id);
-
-                SqlDataReader rd = cmd.ExecuteReader();
-
-                if (rd.Read())
+                c = new CustomerAdmin
                 {
-                    c = new CustomerAdmin
-                    {
-                        Id = (int)rd["id"],
-                        Username = rd["username"].ToString(),
-                        Email = rd["email"].ToString(),
-                        FullName = rd["full_name"].ToString(),
-                        PhoneNumber = rd["phone_number"].ToString(),
-                        CreatedAt = Convert.ToDateTime(rd["created_at"])
-                    };
-                }
-
-                _db.closeConnection();
+                    Id = (int)rd["id"],
+                    Username = rd["username"].ToString(),
+                    Email = rd["email"].ToString(),
+                    FullName = rd["full_name"].ToString(),
+                    PhoneNumber = rd["phone_number"].ToString(),
+                    CreatedAt = Convert.ToDateTime(rd["created_at"])
+                };
             }
+
+            rd.Close();
+            _db.closeConnection();
 
             return c;
         }
 
-        // Lịch sử đơn hàng của khách
+        // ===============================
+        // LỊCH SỬ ĐƠN HÀNG CỦA KHÁCH
+        // ===============================
         public List<dynamic> GetCustomerOrders(int userId)
         {
             var list = new List<dynamic>();
@@ -96,28 +95,27 @@ namespace WebDT.Areas.Admin.DAL
                            WHERE user_id = @uid
                            ORDER BY order_date DESC";
 
-            using (SqlConnection con = _db.getConnecttion())
+            SqlConnection con = _db.getConnecttion();
+            _db.openConnection();
+
+            SqlCommand cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@uid", userId);
+
+            SqlDataReader rd = cmd.ExecuteReader();
+
+            while (rd.Read())
             {
-                _db.openConnection();
-
-                SqlCommand cmd = new SqlCommand(sql, con);
-                cmd.Parameters.AddWithValue("@uid", userId);
-
-                SqlDataReader rd = cmd.ExecuteReader();
-
-                while (rd.Read())
+                list.Add(new
                 {
-                    list.Add(new
-                    {
-                        Id = (int)rd["id"],
-                        OrderDate = Convert.ToDateTime(rd["order_date"]),
-                        Total = Convert.ToDecimal(rd["grand_total"]),
-                        Address = rd["shipping_address"].ToString()
-                    });
-                }
-
-                _db.closeConnection();
+                    Id = (int)rd["id"],
+                    OrderDate = Convert.ToDateTime(rd["order_date"]),
+                    Total = Convert.ToDecimal(rd["grand_total"]),
+                    Address = rd["shipping_address"].ToString()
+                });
             }
+
+            rd.Close();
+            _db.closeConnection();
 
             return list;
         }

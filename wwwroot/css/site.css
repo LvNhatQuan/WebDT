@@ -1,31 +1,121 @@
-html {
-  font-size: 14px;
+﻿html {
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background: #F1EEEE;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+    color: var(--bs-secondary-color);
+    text-align: end;
 }
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+    text-align: start;
+}
+
+.btn1 {
+    background: #F1A3A2;
+}
+
+.background1 {
+    background: #FFFAFA;
+}
+
+.border1 {
+    /* border: độ_dày kiểu_viền màu_viền; */
+    border: 2px solid #D8B1B1 !important;
+    /* Lệnh này để khử bo tròn */
+    border-radius: 0 !important;
+}
+/* 1. Tạo khung viền cho Fieldset */
+.custom-fieldset {
+    border: 1px solid #F1A3A2; /* Màu hồng giống theme của bạn */
+    padding: 20px; /* Khoảng cách từ viền vào sản phẩm */
+    margin: 30px; /* Cách các phần khác ra */
+    position: relative;
+}
+
+    /* 2. Chỉnh lại Legend (Tiêu đề) */
+    .custom-fieldset legend {
+        width: auto; /* QUAN TRỌNG: Gỡ bỏ width 100% của Bootstrap */
+        float: none; /* Gỡ bỏ float của Bootstrap */
+        margin: 0 auto; /* Căn giữa tiêu đề */
+        padding: 0 15px; /* Tạo khoảng trắng 2 bên chữ để không dính viền */
+        font-weight: bold;
+        font-size: 1.5rem;
+        color: #00A85A; /* Màu chữ giống viền */
+        text-transform: uppercase;
+        /* Mẹo để chữ nằm đè lên đường viền */
+        background-color: #F1EEEE; /* Nền trắng để che đoạn viền đi qua chữ */
+        transform: translateY(-50%);
+    }
+/* Vẫn giữ đoạn này để Icon và Input dính liền nhau đẹp mắt */
+.input-group:focus-within .input-group-text {
+    border-color: black !important;
+    background-color: #f8f9fa;
+}
+
+.input-group:focus-within .form-control {
+    border-color: black !important;
+    background-color: #f8f9fa;
+}
+
+.form-control::placeholder {
+    color: #aaa;
+    font-style: italic;
+}
+
+/* Ẩn mũi tên dropdown */
+.dropdown-toggle::after {
+    display: none;
+}
+/* Ẩn mũi tên tăng giảm mặc định của browser */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Ẩn trên Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.btn2 {
+    height: 70px;
+    width: 200px;
+    background: #E25E77;
+}
+/* 1. Class cho thẻ cha (thẻ a) */
+.zoom-container {
+    overflow: hidden;
+    display: block;
+}
+
+/* 2. Thiết lập chuyển động mượt mà cho ảnh */
+.zoom-img {
+    transition: transform 0.5s ease; /* Thời gian phóng to là 0.5 giây */
+}
+
+/* 3. Khi di chuột vào thẻ cha thì ảnh con sẽ phóng to */
+.zoom-container:hover .zoom-img {
+    transform: scale(1.1);
 }

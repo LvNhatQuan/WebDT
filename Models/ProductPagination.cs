@@ -12,6 +12,8 @@ namespace WebDT.Models
 
         // Tổng số trang
         public int PageCount { get; set; }
+        // Tổng số sản phẩm
+        public int TotalItems { get; set; }
 
         // Helper cho View
         public bool HasPreviousPage => CurrentPageIndex > 1;

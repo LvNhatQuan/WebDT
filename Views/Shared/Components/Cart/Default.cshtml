@@ -1,0 +1,13 @@
+﻿@model int
+
+<a asp-controller="Cart" asp-action="Index" class="position-relative">
+    <img src="/Images/cart.jpg" width="26" height="26">
+
+    @if (Model > 0)
+    {
+        <span class="position-absolute top-0 start-100 translate-middle
+                         badge rounded-pill bg-success">
+            @Model
+        </span>
+    }
+</a>

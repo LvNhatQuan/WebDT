@@ -1,0 +1,148 @@
+﻿/* =========================
+   CHĂM SÓC KHÁCH HÀNG - CSS FIX
+========================= */
+
+/* QUAN TRỌNG: Grid 2 cột */
+.care-content {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+    gap: 60px !important;
+    align-items: start !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+/* Box trong grid */
+.care-box {
+    display: block !important;
+    width: 100% !important;
+    float: none !important;
+    clear: none !important;
+    position: relative !important;
+    /* Style cho box */
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    padding: 30px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+    .care-box:hover {
+        transform: translateY(-5px) !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+
+/* Icon */
+.care-icon {
+    display: block !important;
+    width: 80px !important;
+    height: 80px !important;
+    margin: 0 auto 20px auto !important;
+    object-fit: contain !important;
+}
+
+/* Tiêu đề trong box */
+.care-box h5 {
+    text-align: center !important;
+    color: #16a34a !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    margin-bottom: 25px !important;
+    padding-bottom: 15px !important;
+    border-bottom: 2px solid #f0f0f0 !important;
+}
+
+/* Nội dung text */
+.care-box p {
+    margin-bottom: 12px !important;
+    line-height: 1.6 !important;
+    color: #374151 !important;
+    font-size: 15px !important;
+}
+
+.care-box strong {
+    color: #111827 !important;
+    font-weight: 600 !important;
+}
+
+/* Số điện thoại */
+.care-box .phone-number {
+    color: #16a34a !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+}
+
+/* Link Facebook */
+.care-box a {
+    display: inline-block !important;
+    color: #2563eb !important;
+    text-decoration: none !important;
+    padding: 8px 12px !important;
+    background: #eff6ff !important;
+    border-radius: 6px !important;
+    margin: 8px 0 15px 0 !important;
+    border-left: 3px solid #2563eb !important;
+    word-break: break-all !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+    .care-box a:hover {
+        background: #dbeafe !important;
+        text-decoration: underline !important;
+    }
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+/* Tablet */
+@media (max-width: 992px) {
+    .care-content {
+        gap: 40px !important;
+    }
+
+    .care-box {
+        padding: 25px !important;
+    }
+}
+
+/* Mobile: Chuyển thành 1 cột */
+@media (max-width: 768px) {
+    .care-content {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto !important;
+        gap: 30px !important;
+    }
+
+    .care-box {
+        padding: 20px !important;
+        text-align: center !important;
+    }
+
+    .care-icon {
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    .care-box h5 {
+        font-size: 18px !important;
+    }
+}
+
+/* Mobile nhỏ */
+@media (max-width: 480px) {
+    .care-content {
+        gap: 20px !important;
+    }
+
+    .care-box {
+        padding: 15px !important;
+    }
+
+        .care-box p {
+            font-size: 14px !important;
+        }
+}

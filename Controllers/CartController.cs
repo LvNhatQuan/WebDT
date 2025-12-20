@@ -9,11 +9,17 @@ namespace WebDT.Controllers
     [Authorize]
     public class CartController : Controller
     {
-        private readonly ProductDAL _productDal = new ProductDAL();
+        private readonly ProductDAL _productDal;
+
+        public CartController()
+        {
+            _productDal = new ProductDAL();
+        }
 
         // =========================
         // VIEW CART
         // =========================
+        [HttpGet]
         public IActionResult Index()
         {
             var cart = GetCart();
@@ -21,12 +27,15 @@ namespace WebDT.Controllers
         }
 
         // =========================
-        // ADD TO CART (POST ONLY)
+        // ADD TO CART
         // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddToCart(int productId, int quantity)
+        public IActionResult AddToCart(int productId, int quantity = 1)
         {
+            if (quantity <= 0)
+                quantity = 1;
+
             var cart = GetCart();
 
             var product = _productDal.GetProductById(productId);
@@ -34,6 +43,7 @@ namespace WebDT.Controllers
                 return NotFound();
 
             var item = cart.FirstOrDefault(x => x.IdProduct == productId);
+
             if (item != null)
             {
                 item.Quantity += quantity;
@@ -57,21 +67,7 @@ namespace WebDT.Controllers
         }
 
         // =========================
-        // REMOVE
-        // =========================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Remove(int productId)
-        {
-            var cart = GetCart();
-            cart.RemoveAll(x => x.IdProduct == productId);
-            SaveCart(cart);
-
-            return RedirectToAction("Index");
-        }
-
-        // =========================
-        // UPDATE
+        // UPDATE QUANTITY (+ / -)
         // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -80,15 +76,50 @@ namespace WebDT.Controllers
             var cart = GetCart();
             var item = cart.FirstOrDefault(x => x.IdProduct == productId);
 
-            if (item != null)
+            if (item == null)
+                return RedirectToAction("Index");
+
+            // Nếu số lượng <= 0 thì xóa luôn
+            if (quantity <= 0)
             {
-                if (quantity <= 0)
-                    cart.Remove(item);
-                else
-                    item.Quantity = quantity;
+                cart.Remove(item);
+            }
+            else
+            {
+                item.Quantity = quantity;
             }
 
             SaveCart(cart);
+            return RedirectToAction("Index");
+        }
+
+        // =========================
+        // REMOVE ITEM
+        // =========================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Remove(int productId)
+        {
+            var cart = GetCart();
+            var item = cart.FirstOrDefault(x => x.IdProduct == productId);
+
+            if (item != null)
+            {
+                cart.Remove(item);
+                SaveCart(cart);
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        // =========================
+        // CLEAR CART (OPTIONAL)
+        // =========================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Clear()
+        {
+            HttpContext.Session.Remove(MyConst.CART_KEY);
             return RedirectToAction("Index");
         }
 

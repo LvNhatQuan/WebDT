@@ -1,0 +1,334 @@
+﻿@model WebDT.Areas.Admin.Models.CouponFormViewModel
+@{
+    ViewData["Title"] = "Chỉnh sửa mã giảm giá";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="h4 mb-3">@ViewData["Title"]</h2>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        <form asp-area="Admin" asp-controller="CouponAdmin" asp-action="Edit" method="post" id="couponForm">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CurrentProductPage" id="currentProductPage" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row">
+                <!-- Thông tin mã giảm giá -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Thông tin cơ bản</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label asp-for="EventName" class="form-label fw-bold">Tên chương trình *</label>
+                                <input asp-for="EventName" class="form-control" placeholder="Nhập tên chương trình" />
+                                <span asp-validation-for="EventName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="DiscountValue" class="form-label fw-bold">Giảm giá (%) *</label>
+                                    <div class="input-group">
+                                        <input asp-for="DiscountValue" class="form-control" type="number" min="1" max="100" />
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <span asp-validation-for="DiscountValue" class="text-danger small"></span>
+                                    <div class="form-text small">Từ 1% đến 100%</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold d-block">Trạng thái</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                                        <label asp-for="IsActive" class="form-check-label">Kích hoạt mã giảm giá</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="StartDate" class="form-label fw-bold">Ngày bắt đầu *</label>
+                                    <input asp-for="StartDate" type="datetime-local" class="form-control" />
+                                    <span asp-validation-for="StartDate" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="EndDate" class="form-label fw-bold">Ngày kết thúc *</label>
+                                    <input asp-for="EndDate" type="datetime-local" class="form-control" />
+                                    <span asp-validation-for="EndDate" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danh sách sản phẩm - ĐƠN GIẢN -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Sản phẩm áp dụng</h5>
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted">
+                                        <span id="selectedCount" class="fw-bold">@(Model.SelectedProductIds?.Count ?? 0)</span> đã chọn
+                                    </small>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="selectAllProducts" />
+                                        <label class="form-check-label small" for="selectAllProducts">Chọn tất cả</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách sản phẩm ĐƠN GIẢN NHẤT -->
+                        <div class="card-body p-0" style="height: 400px; overflow-y: auto;">
+                            @if (Model.AllProducts != null && Model.AllProducts.Any())
+                            {
+                                <div class="list-group list-group-flush">
+                                    @foreach (var product in Model.AllProducts)
+                                    {
+                                        var isSelected = Model.SelectedProductIds != null && Model.SelectedProductIds.Contains(product.Id);
+                                        <label class="list-group-item list-group-item-action border-0 py-2" 
+                                               for="product_@product.Id">
+                                            <div class="d-flex align-items-center">
+                                                <div class="form-check me-2">
+                                                    <input class="form-check-input product-checkbox" 
+                                                           type="checkbox" 
+                                                           name="SelectedProductIds" 
+                                                           value="@product.Id" 
+                                                           id="product_@product.Id" 
+                                                           @(isSelected ? "checked" : "") />
+                                                </div>
+                                                
+                                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                                {
+                                                    <img src="~/Images/SanPham/@product.ImageUrl"
+                                                         alt="@product.Name"
+                                                         class="rounded me-3"
+                                                         style="width: 45px; height: 45px; object-fit: cover;" 
+                                                         loading="lazy" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="rounded me-3 d-flex align-items-center justify-content-center bg-light"
+                                                         style="width: 45px; height: 45px;">
+                                                        <i class="bi bi-image text-muted"></i>
+                                                    </div>
+                                                }
+                                                
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <div class="fw-medium text-truncate" style="max-width: 200px;">@product.Name</div>
+                                                            <small class="text-muted">@product.CategoryName</small>
+                                                        </div>
+                                                        <div class="text-end ms-2">
+                                                            <div class="fw-bold">@String.Format("{0:N0}", product.Price)₫</div>
+                                                            <small class="@(product.StockQuantity > 0 ? "text-success" : "text-danger")">
+                                                                @if (product.StockQuantity > 0)
+                                                                {
+                                                                    @:Còn @product.StockQuantity
+                                                                }
+                                                                else
+                                                                {
+                                                                    @:Hết hàng
+                                                                }
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-5">
+                                    <i class="bi bi-box text-muted" style="font-size: 3rem;"></i>
+                                    <p class="text-muted mt-3">Không có sản phẩm nào</p>
+                                    <a asp-area="Admin" asp-controller="ProductAdmin" asp-action="Index" 
+                                       class="btn btn-sm btn-outline-primary mt-2">
+                                        <i class="bi bi-plus-circle"></i> Quản lý sản phẩm
+                                    </a>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Footer phân trang đơn giản -->
+                        @if (Model.TotalProductPages > 1)
+                        {
+                            <div class="card-footer border-top-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted">
+                                            Hiển thị @Model.AllProducts.Count/@Model.TotalProducts sản phẩm
+                                        </small>
+                                    </div>
+                                    
+                                    <nav>
+                                        <ul class="pagination pagination-sm mb-0">
+                                            @if (Model.CurrentProductPage > 1)
+                                            {
+                                                <li class="page-item">
+                                                    <a class="page-link" 
+                                                       asp-area="Admin" asp-controller="CouponAdmin" asp-action="Edit"
+                                                       asp-route-id="@Model.Id"
+                                                       asp-route-productPage="@(Model.CurrentProductPage - 1)">
+                                                        <i class="bi bi-chevron-left"></i>
+                                                    </a>
+                                                </li>
+                                            }
+                                            
+                                            <li class="page-item active">
+                                                <span class="page-link">@Model.CurrentProductPage</span>
+                                            </li>
+                                            
+                                            @if (Model.CurrentProductPage < Model.TotalProductPages)
+                                            {
+                                                <li class="page-item">
+                                                    <a class="page-link" 
+                                                       asp-area="Admin" asp-controller="CouponAdmin" asp-action="Edit"
+                                                       asp-route-id="@Model.Id"
+                                                       asp-route-productPage="@(Model.CurrentProductPage + 1)">
+                                                        <i class="bi bi-chevron-right"></i>
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check-circle"></i> Cập nhật
+                </button>
+                <a asp-area="Admin" asp-controller="CouponAdmin" asp-action="Index" 
+                   class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-x-circle"></i> Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Format datetime-local
+            const formatForInput = (dateString) => {
+                const date = new Date(dateString);
+                const offset = date.getTimezoneOffset() * 60000;
+                return new Date(date - offset).toISOString().slice(0, 16);
+            };
+            
+            const startDate = document.getElementById('StartDate');
+            const endDate = document.getElementById('EndDate');
+            
+            if (startDate && startDate.value) {
+                startDate.value = formatForInput(startDate.value);
+            }
+            
+            if (endDate && endDate.value) {
+                endDate.value = formatForInput(endDate.value);
+            }
+
+            // Chọn tất cả sản phẩm
+            const selectAllCheckbox = document.getElementById('selectAllProducts');
+            const productCheckboxes = document.querySelectorAll('.product-checkbox');
+            const selectedCountSpan = document.getElementById('selectedCount');
+
+            // Cập nhật số lượng đã chọn
+            function updateSelectedCount() {
+                if (!selectedCountSpan) return;
+                const selectedCount = document.querySelectorAll('.product-checkbox:checked').length;
+                selectedCountSpan.textContent = selectedCount;
+                
+                // Cập nhật "Chọn tất cả"
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = selectedCount === productCheckboxes.length;
+                }
+            }
+
+            // "Chọn tất cả"
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.product-checkbox');
+                    checkboxes.forEach(cb => {
+                        cb.checked = this.checked;
+                        cb.dispatchEvent(new Event('change'));
+                    });
+                });
+            }
+
+            // Thay đổi từng sản phẩm
+            productCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    // Sử dụng setTimeout để tránh blocking UI
+                    setTimeout(updateSelectedCount, 0);
+                });
+            });
+
+            // Khởi tạo đếm
+            updateSelectedCount();
+
+            // Validation
+            const form = document.getElementById('couponForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    let isValid = true;
+                    let errorMessages = [];
+                    
+                    // Validate discount value
+                    const discountInput = document.getElementById('DiscountValue');
+                    if (discountInput) {
+                        const discountValue = parseInt(discountInput.value);
+                        if (isNaN(discountValue) || discountValue < 1 || discountValue > 100) {
+                            isValid = false;
+                            errorMessages.push('Giá trị giảm giá phải từ 1% đến 100%');
+                        }
+                    }
+                    
+                    // Validate dates
+                    const startDateInput = document.getElementById('StartDate');
+                    const endDateInput = document.getElementById('EndDate');
+                    if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+                        const start = new Date(startDateInput.value);
+                        const end = new Date(endDateInput.value);
+                        if (start >= end) {
+                            isValid = false;
+                            errorMessages.push('Ngày kết thúc phải sau ngày bắt đầu');
+                        }
+                    }
+                    
+                    if (!isValid) {
+                        e.preventDefault();
+                        alert('Vui lòng sửa các lỗi sau:\n\n' + errorMessages.join('\n'));
+                        return false;
+                    }
+                    
+                    return true;
+                });
+            }
+        });
+    </script>
+}

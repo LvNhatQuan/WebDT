@@ -8,15 +8,19 @@ namespace WebDT.DAL
     {
         private readonly DbConnect db = new DbConnect();
 
+        // ================= CREATE ORDER =================
         public int CreateOrder(
             int userId,
             List<CartItem> cart,
             decimal shippingFee,
             decimal discountAmount,
-            string address
+            string address,
+            string receiverName,
+            string receiverPhone
         )
         {
-            if (cart == null || cart.Count == 0) return -1;
+            if (cart == null || cart.Count == 0)
+                return -1;
 
             db.openConnection();
             var tran = db.getConnecttion().BeginTransaction();
@@ -26,13 +30,35 @@ namespace WebDT.DAL
                 decimal subTotal = cart.Sum(x => x.Total);
                 decimal grandTotal = subTotal + shippingFee - discountAmount;
 
-                // ✅ DB mới: orders KHÔNG có coupon_id
+                // ✅ INSERT ORDERS – KHỚP 100% DB DT
                 string sqlOrder = @"
 INSERT INTO orders
-(user_id, order_date, sub_total, shipping_fee, discount_amount, grand_total, shipping_address, status)
+(
+    user_id,
+    order_date,
+    sub_total,
+    shipping_fee,
+    discount_amount,
+    grand_total,
+    shipping_address,
+    receiver_name,
+    receiver_phone,
+    status
+)
 OUTPUT INSERTED.id
 VALUES
-(@uid, GETDATE(), @sub, @ship, @disc, @grand, @addr, 'pending')";
+(
+    @uid,
+    GETDATE(),
+    @sub,
+    @ship,
+    @disc,
+    @grand,
+    @addr,
+    @rname,
+    @rphone,
+    'pending'
+)";
 
                 int orderId;
                 using (var cmd = new SqlCommand(sqlOrder, db.getConnecttion(), tran))
@@ -42,11 +68,14 @@ VALUES
                     cmd.Parameters.AddWithValue("@ship", shippingFee);
                     cmd.Parameters.AddWithValue("@disc", discountAmount);
                     cmd.Parameters.AddWithValue("@grand", grandTotal);
-                    cmd.Parameters.AddWithValue("@addr", address ?? "");
+                    cmd.Parameters.AddWithValue("@addr", address);
+                    cmd.Parameters.AddWithValue("@rname", receiverName);
+                    cmd.Parameters.AddWithValue("@rphone", receiverPhone);
+
                     orderId = Convert.ToInt32(cmd.ExecuteScalar());
                 }
 
-                // ✅ DB mới: order_items CÓ coupon_id
+                // ================= INSERT ORDER ITEMS =================
                 string sqlItem = @"
 INSERT INTO order_items
 (order_id, coupon_id, product_id, quantity, price, total_price)
@@ -79,6 +108,7 @@ VALUES
             }
         }
 
+        // ================= GET ORDER =================
         public OrderModel? GetOrderById(int orderId)
         {
             db.openConnection();
@@ -102,6 +132,8 @@ VALUES
                         Discount = Convert.ToDecimal(r["discount_amount"]),
                         GrandTotal = Convert.ToDecimal(r["grand_total"]),
                         ShippingAddress = r["shipping_address"]?.ToString() ?? "",
+                        ReceiverName = r["receiver_name"]?.ToString() ?? "",
+                        ReceiverPhone = r["receiver_phone"]?.ToString() ?? "",
                         OrderDate = Convert.ToDateTime(r["order_date"]),
                         Status = r["status"]?.ToString() ?? "pending"
                     };
@@ -112,6 +144,7 @@ VALUES
             return order;
         }
 
+        // ================= GET ITEMS =================
         public List<OrderItemModel> GetItems(int orderId)
         {
             List<OrderItemModel> items = new();
