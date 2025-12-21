@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WebDT.Areas.Admin.DAL;
-using WebDT.Areas.Admin.Models;
 
 namespace WebDT.Areas.Admin.Controllers
 {
@@ -10,19 +10,15 @@ namespace WebDT.Areas.Admin.Controllers
     public class OrderAdminController : Controller
     {
         private readonly OrderAdminDAL _orderDal = new OrderAdminDAL();
+        private readonly AdminLogDAL _logDAL = new AdminLogDAL();
 
-        // =======================================
-        // INDEX – DANH SÁCH ĐƠN HÀNG
-        // =======================================
+        // ================== INDEX ==================
         public IActionResult Index()
         {
-            var orders = _orderDal.GetAll();
-            return View(orders);
+            return View(_orderDal.GetAll());
         }
 
-        // =======================================
-        // DETAILS – XEM CHI TIẾT ĐƠN HÀNG
-        // =======================================
+        // ================== DETAILS ==================
         public IActionResult Details(int id)
         {
             var order = _orderDal.GetById(id);
@@ -35,9 +31,7 @@ namespace WebDT.Areas.Admin.Controllers
             return View(order);
         }
 
-        // =======================================
-        // DELETE (GET) – XÁC NHẬN XÓA
-        // =======================================
+        // ================== DELETE (GET) ==================
         public IActionResult Delete(int id)
         {
             var order = _orderDal.GetById(id);
@@ -50,33 +44,38 @@ namespace WebDT.Areas.Admin.Controllers
             return View(order);
         }
 
-        // =======================================
-        // DELETE (POST) – XÓA ĐƠN HÀNG
-        // =======================================
-        [HttpPost, ActionName("Delete")]
+        // ================== DELETE (POST) ==================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ActionName("Delete")]
         public IActionResult DeleteConfirmed(int id)
         {
-            // 1) Xóa reviews trước
             _orderDal.DeleteReviewsByOrderId(id);
 
-            // 2) Xóa đơn hàng
             bool ok = _orderDal.Delete(id);
 
             if (ok)
+            {
+                _logDAL.InsertLog(
+                    int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
+                    "Xóa đơn hàng",
+                    "Đơn hàng",
+                    $"Xóa đơn hàng ID = {id}"
+                );
+
                 TempData["SuccessMessage"] = "Xóa đơn hàng thành công!";
+            }
             else
+            {
                 TempData["ErrorMessage"] = "Không thể xóa đơn hàng.";
+            }
 
             return RedirectToAction(nameof(Index));
         }
 
-
-        // =======================================
-        // EDIT STATUS (TÙY CHỌN – NẾU CÓ STATUS)
-        // =======================================
+        // ================== EDIT (OPTIONAL) ==================
         public IActionResult Edit(int id)
         {
-            // Chỉ hoạt động nếu sau này bạn thêm cột 'status'
             return RedirectToAction(nameof(Details), new { id });
         }
     }

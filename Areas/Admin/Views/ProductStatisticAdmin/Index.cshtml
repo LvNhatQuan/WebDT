@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = "Thống kê sản phẩm";
+    var best = ViewBag.BestSeller;
+}
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="admin-card text-center">
+            <h6>Tổng sản phẩm</h6>
+            <h3>@ViewBag.TotalProducts</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="admin-card text-center">
+            <h6>Tổng doanh thu</h6>
+            <h3>@String.Format("{0:N0} đ", ViewBag.TotalRevenue)</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="admin-card text-center">
+            <h6>Bán chạy nhất</h6>
+            <strong>@best?.ProductName</strong><br />
+            <small>@best?.TotalQuantity sản phẩm</small>
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Sản phẩm</th>
+            <th>Danh mục</th>
+            <th>Số đơn</th>
+            <th>Số lượng bán</th>
+            <th>Doanh thu</th>
+            <th>Đánh giá ⭐</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.ProductName</td>
+                <td>@p.CategoryName</td>
+                <td>@p.TotalOrders</td>
+                <td>@p.TotalQuantity</td>
+                <td>@String.Format("{0:N0} đ", p.Revenue)</td>
+                <td>@String.Format("{0:0.0}", p.AvgRating)</td>
+            </tr>
+        }
+    </tbody>
+</table>

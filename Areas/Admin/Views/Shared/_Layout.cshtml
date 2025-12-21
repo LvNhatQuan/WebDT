@@ -174,12 +174,36 @@
                         <i class="bi bi-bag-check"></i> Quản lý khách hàng
                     </a>
                 </li>
-                <a class="nav-link" href="#"><i class="bi bi-person-badge"></i> Quản lý nhân viên</a>
-                <a class="nav-link" href="#"><i class="bi bi-ticket-perforated"></i> Quản lý giảm giá</a>
-                <a class="nav-link" href="#"><i class="bi bi-truck"></i> Quản lý giao hàng</a>
-                <a class="nav-link" href="#"><i class="bi bi-chat-left-quote"></i> Đánh giá sản phẩm</a>
-                <a class="nav-link" href="#"><i class="bi bi-journal-text"></i> Nhật ký quản lý</a>
-                <a class="nav-link" href="#"><i class="bi bi-graph-up-arrow"></i> Thống kê sản phẩm</a>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="Admin" asp-controller="StaffAdmin" asp-action="Index">
+                        <i class="bi bi-person-badge"></i> Quản lý nhân viên
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="Admin" asp-controller="CouponAdmin" asp-action="Index">
+                        <i class="bi bi-ticket-perforated"></i> Quản lý giảm giá
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="Admin" asp-controller="ShippingAdmin" asp-action="Index">
+                        <i class="bi bi-ticket-perforated"></i> Quản lý giao hàng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="Admin" asp-controller="ReviewAdmin" asp-action="Index">
+                        <i class="bi bi-chat-left-quote"></i> Quản lý sản phẩm
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="Admin" asp-controller="AdminLog" asp-action="Index">
+                        <i class="bi bi-journal-text"></i> Nhật ký quản lý
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="Admin" asp-controller="ProductStatisticAdmin" asp-action="Index">
+                        <i class="bi bi-graph-up-arrow"></i> Thống kê sản phẩm
+                    </a>
+                </li>
             </nav>
 
             <div class="mt-auto">

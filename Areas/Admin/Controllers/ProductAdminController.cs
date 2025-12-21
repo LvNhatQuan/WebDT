@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 using WebDT.Areas.Admin.DAL;
 using WebDT.Areas.Admin.Models;
 using WebDT.Areas.DAL;
@@ -13,157 +14,97 @@ namespace WebDT.Areas.Admin.Controllers
     [Authorize(Roles = "admin")]
     public class ProductAdminController : Controller
     {
-        ProductAdminDAL productDAL = new ProductAdminDAL();
-        CategoryAdminDAL categoryDAL = new CategoryAdminDAL();
+        private readonly ProductAdminDAL productDAL = new ProductAdminDAL();
+        private readonly CategoryAdminDAL categoryDAL = new CategoryAdminDAL();
+        private readonly AdminLogDAL _logDAL = new AdminLogDAL();
 
-        // ==================== DANH SÁCH ====================
-        public ActionResult Index()
+        // ==================== INDEX ====================
+        public IActionResult Index()
         {
-            var products = productDAL.getAll();
-            return View(products);
+            return View(productDAL.getAll());
         }
 
-        // ==================== CHI TIẾT ====================
-        public ActionResult Details(int id)
+        // ==================== DETAILS ====================
+        public IActionResult Details(int id)
         {
             var product = productDAL.GetProductById(id);
-
             if (product == null || product.Id == 0)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy sản phẩm.";
                 return RedirectToAction(nameof(Index));
             }
-
             return View(product);
         }
 
         // ==================== CREATE (GET) ====================
-        public ActionResult Create()
+        public IActionResult Create()
         {
-            // Lấy danh sách Category từ DB
-            var categories = categoryDAL.getAll();
-
-            // Khai báo model form
-            var model = new ProductFormAdmin();
-
-            // Đổ data cho dropdown
-            model.ListCategory = categories
-                .Select(item => new SelectListItem
-                {
-                    Text = item.Name,
-                    Value = item.Id.ToString()
-                })
-                .ToList();
-
-            // Giá trị mặc định
-            model.IsActive = true;
-            model.StockQuantity = 0;
-
-            return View(model);
+            return View(new ProductFormAdmin
+            {
+                IsActive = true,
+                StockQuantity = 0,
+                ListCategory = categoryDAL.getAll()
+                    .Select(c => new SelectListItem
+                    {
+                        Text = c.Name,
+                        Value = c.Id.ToString()
+                    }).ToList()
+            });
         }
 
         // ==================== CREATE (POST) ====================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(ProductFormAdmin productAddNew, IFormFile Img)
+        public IActionResult Create(ProductFormAdmin model, IFormFile Img)
         {
-            try
+            if (model.CategoryIdSelected.HasValue)
+                model.CategoryId = model.CategoryIdSelected.Value;
+            else
+                ModelState.AddModelError("CategoryIdSelected", "Vui lòng chọn danh mục");
+
+            ModelState.Remove(nameof(model.CategoryId));
+
+            if (!ModelState.IsValid)
             {
-                // 1. Map CategoryId từ dropdown TRƯỚC
-                if (productAddNew.CategoryIdSelected.HasValue)
-                {
-                    productAddNew.CategoryId = productAddNew.CategoryIdSelected.Value;
-                }
-                else
-                {
-                    ModelState.AddModelError("CategoryIdSelected", "Vui lòng chọn danh mục");
-                }
-
-                // 2. Xoá lỗi mặc định của CategoryId (vì mình đã tự gán)
-                ModelState.Remove(nameof(productAddNew.CategoryId));
-
-                // 3. Kiểm tra ModelState sau khi đã map CategoryId
-                if (!ModelState.IsValid)
-                {
-                    TempData["ErrorMessage"] = "Dữ liệu chưa hợp lệ, vui lòng kiểm tra lại.";
-
-                    var categories = categoryDAL.getAll();
-                    productAddNew.ListCategory = categories
-                        .Select(item => new SelectListItem
-                        {
-                            Text = item.Name,
-                            Value = item.Id.ToString()
-                        })
-                        .ToList();
-
-                    return View(productAddNew);
-                }
-
-                
-                productAddNew.CreatedAt = DateTime.Now;
-
-                if (Img == null || Img.Length == 0)
-                {
-                    productAddNew.ImageUrl = string.Empty;
-                }
-                else
-                {
-                    var imageName = ImageHelper.UpLoadImage(Img, "SanPham");
-                    productAddNew.ImageUrl = imageName;
-                }
-
-                bool isInserted = productDAL.AddNew(productAddNew);
-
-                if (isInserted)
-                {
-                    TempData["SuccessMessage"] = "Thêm sản phẩm thành công";
-                    return RedirectToAction(nameof(Index));
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Không thể thêm sản phẩm";
-
-                    var categories = categoryDAL.getAll();
-                    productAddNew.ListCategory = categories
-                        .Select(item => new SelectListItem
-                        {
-                            Text = item.Name,
-                            Value = item.Id.ToString()
-                        })
-                        .ToList();
-
-                    return View(productAddNew);
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
-
-                var categories = categoryDAL.getAll();
-                productAddNew.ListCategory = categories
-                    .Select(item => new SelectListItem
+                model.ListCategory = categoryDAL.getAll()
+                    .Select(c => new SelectListItem
                     {
-                        Text = item.Name,
-                        Value = item.Id.ToString()
-                    })
-                    .ToList();
-
-                return View(productAddNew);
+                        Text = c.Name,
+                        Value = c.Id.ToString()
+                    }).ToList();
+                return View(model);
             }
-        }
 
-        // ==================== EDIT (GET) ====================
-        public ActionResult Edit(int id)
-        {
-            var product = productDAL.GetProductById(id);
+            model.CreatedAt = DateTime.Now;
+            model.ImageUrl = Img != null && Img.Length > 0
+                ? ImageHelper.UpLoadImage(Img, "SanPham")
+                : string.Empty;
 
-            if (product == null || product.Id == 0)
+            if (productDAL.AddNew(model))
             {
-                TempData["ErrorMessage"] = "Không tìm thấy sản phẩm.";
+                _logDAL.InsertLog(
+                    int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
+                    "Thêm sản phẩm",
+                    "Sản phẩm",
+                    $"Thêm sản phẩm: {model.Name}"
+                );
+
+                TempData["SuccessMessage"] = "Thêm sản phẩm thành công";
                 return RedirectToAction(nameof(Index));
             }
 
-            var model = new ProductFormAdmin
+            TempData["ErrorMessage"] = "Không thể thêm sản phẩm";
+            return View(model);
+        }
+
+        // ==================== EDIT (GET) ====================
+        public IActionResult Edit(int id)
+        {
+            var product = productDAL.GetProductById(id);
+            if (product == null || product.Id == 0)
+                return RedirectToAction(nameof(Index));
+
+            return View(new ProductFormAdmin
             {
                 Id = product.Id,
                 Name = product.Name,
@@ -174,169 +115,91 @@ namespace WebDT.Areas.Admin.Controllers
                 IsActive = product.IsActive,
                 CreatedAt = product.CreatedAt,
                 CategoryId = product.CategoryId,
-                CategoryName = product.CategoryName,
-                CategoryIdSelected = product.CategoryId
-            };
-
-            var categories = categoryDAL.getAll();
-            model.ListCategory = categories
-                .Select(item => new SelectListItem
-                {
-                    Text = item.Name,
-                    Value = item.Id.ToString(),
-                    Selected = (item.Id == product.CategoryId)
-                })
-                .ToList();
-
-            return View(model);
+                CategoryIdSelected = product.CategoryId,
+                ListCategory = categoryDAL.getAll()
+                    .Select(c => new SelectListItem
+                    {
+                        Text = c.Name,
+                        Value = c.Id.ToString(),
+                        Selected = c.Id == product.CategoryId
+                    }).ToList()
+            });
         }
 
         // ==================== EDIT (POST) ====================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, ProductFormAdmin productEdit, IFormFile? ImageUpload)
+        public IActionResult Edit(int id, ProductFormAdmin model, IFormFile? ImageUpload)
         {
-            try
+            if (model.CategoryIdSelected.HasValue)
+                model.CategoryId = model.CategoryIdSelected.Value;
+            else
+                ModelState.AddModelError("CategoryIdSelected", "Vui lòng chọn danh mục");
+
+            ModelState.Remove(nameof(model.CategoryId));
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var old = productDAL.GetProductById(id);
+            if (old == null)
+                return RedirectToAction(nameof(Index));
+
+            model.ImageUrl = ImageUpload != null && ImageUpload.Length > 0
+                ? ImageHelper.UpLoadImage(ImageUpload, "SanPham")
+                : old.ImageUrl;
+
+            model.CreatedAt = old.CreatedAt;
+            model.Id = id;
+
+            if (productDAL.UpdateProduct(model, id))
             {
-                // 1. Map CategoryId từ dropdown
-                if (productEdit.CategoryIdSelected.HasValue)
-                {
-                    productEdit.CategoryId = productEdit.CategoryIdSelected.Value;
-                }
-                else
-                {
-                    ModelState.AddModelError("CategoryIdSelected", "Vui lòng chọn danh mục");
-                }
+                _logDAL.InsertLog(
+                    int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
+                    "Cập nhật sản phẩm",
+                    "Sản phẩm",
+                    $"Cập nhật sản phẩm ID = {id}"
+                );
 
-                // 2. Xoá lỗi cũ của CategoryId
-                ModelState.Remove(nameof(productEdit.CategoryId));
-
-                if (!ModelState.IsValid)
-                {
-                    TempData["ErrorMessage"] = "Dữ liệu chưa hợp lệ, vui lòng kiểm tra lại.";
-
-                    var categories = categoryDAL.getAll();
-                    productEdit.ListCategory = categories
-                        .Select(item => new SelectListItem
-                        {
-                            Text = item.Name,
-                            Value = item.Id.ToString(),
-                            Selected = (item.Id == productEdit.CategoryId)
-                        })
-                        .ToList();
-
-                    return View(productEdit);
-                }
-
-                // 3. Lấy dữ liệu cũ để giữ CreatedAt + Image nếu không upload mới
-                var oldProduct = productDAL.GetProductById(id);
-                if (oldProduct == null || oldProduct.Id == 0)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy sản phẩm.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // 4. Xử lý ảnh
-                if (ImageUpload != null && ImageUpload.Length > 0)
-                {
-                    var imageName = ImageHelper.UpLoadImage(ImageUpload, "SanPham");
-                    productEdit.ImageUrl = imageName;
-                }
-                else
-                {
-                    productEdit.ImageUrl = oldProduct.ImageUrl;
-                }
-
-                // 5. Giữ nguyên CreatedAt cũ
-                productEdit.CreatedAt = oldProduct.CreatedAt;
-                productEdit.Id = id;
-
-                // 6. Cập nhật DB
-                bool isUpdated = productDAL.UpdateProduct(productEdit, id);
-
-                if (isUpdated)
-                {
-                    TempData["SuccessMessage"] = "Cập nhật sản phẩm thành công";
-                    return RedirectToAction(nameof(Index));
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Cập nhật thất bại";
-
-                    var categories = categoryDAL.getAll();
-                    productEdit.ListCategory = categories
-                        .Select(item => new SelectListItem
-                        {
-                            Text = item.Name,
-                            Value = item.Id.ToString(),
-                            Selected = (item.Id == productEdit.CategoryId)
-                        })
-                        .ToList();
-
-                    return View(productEdit);
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "Lỗi cập nhật: " + ex.Message;
-
-                var categories = categoryDAL.getAll();
-                productEdit.ListCategory = categories
-                    .Select(item => new SelectListItem
-                    {
-                        Text = item.Name,
-                        Value = item.Id.ToString(),
-                        Selected = (item.Id == productEdit.CategoryId)
-                    })
-                    .ToList();
-
-                return View(productEdit);
-            }
-        }
-
-        // ==================== DELETE (GET) ====================
-        public ActionResult Delete(int id)
-        {
-            var product = productDAL.GetProductById(id);
-
-            if (product == null || product.Id == 0)
-            {
-                TempData["ErrorMessage"] = "Không tìm thấy sản phẩm.";
+                TempData["SuccessMessage"] = "Cập nhật sản phẩm thành công";
                 return RedirectToAction(nameof(Index));
             }
 
+            TempData["ErrorMessage"] = "Cập nhật thất bại";
+            return View(model);
+        }
+
+        // ==================== DELETE (GET) ====================
+        public IActionResult Delete(int id)
+        {
+            var product = productDAL.GetProductById(id);
+            if (product == null)
+                return RedirectToAction(nameof(Index));
             return View(product);
         }
 
         // ==================== DELETE (POST) ====================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public IActionResult DeleteConfirmed(int id)
         {
-            try
+            if (productDAL.DeleteProduct(id))
             {
-                var isSuccess = productDAL.DeleteProduct(id);
+                _logDAL.InsertLog(
+                    int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
+                    "Xóa sản phẩm",
+                    "Sản phẩm",
+                    $"Xóa sản phẩm ID = {id}"
+                );
 
-                if (isSuccess)
-                {
-                    TempData["SuccessMessage"] = "Xóa sản phẩm thành công";
-                    return RedirectToAction(nameof(Index));
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Xóa sản phẩm thất bại";
-
-                    var product = productDAL.GetProductById(id);
-                    return View(product);
-                }
+                TempData["SuccessMessage"] = "Xóa sản phẩm thành công";
             }
-            catch (Exception ex)
+            else
             {
-                TempData["ErrorMessage"] = "Lỗi xóa sản phẩm: " + ex.Message;
-
-                var product = productDAL.GetProductById(id);
-                return View(product);
+                TempData["ErrorMessage"] = "Xóa sản phẩm thất bại";
             }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

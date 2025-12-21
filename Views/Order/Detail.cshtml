@@ -1,0 +1,20 @@
+﻿@* @model WebDT.Models.OrderModel
+
+<h4>Đơn hàng #@Model.Id</h4>
+
+<ul class="list-group mb-4">
+    <li class="list-group-item @(Model.Status == "pending" ? "active" : "")">🕒 Chờ xác nhận</li>
+    <li class="list-group-item @(Model.Status == "confirmed" ? "active" : "")">✔ Đã xác nhận</li>
+    <li class="list-group-item @(Model.Status == "shipping" ? "active" : "")">🚚 Đang giao</li>
+    <li class="list-group-item @(Model.Status == "delivered" ? "active" : "")">📦 Đã giao</li>
+    <li class="list-group-item @(Model.Status == "cancelled" ? "active" : "")">❌ Đã hủy</li>
+</ul>
+
+<h5>Sản phẩm</h5>
+@foreach (var i in Model.Items)
+{
+    <div class="border p-2 mb-2">
+        <strong>@i.Name</strong> x @i.Quantity
+        <div>@i.Total.ToString("#,##0 đ")</div>
+    </div>
+} *@

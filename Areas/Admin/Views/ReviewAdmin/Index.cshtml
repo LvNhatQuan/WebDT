@@ -1,0 +1,55 @@
+﻿@model List<WebDT.Areas.Admin.Models.ReviewAdmin>
+@{
+    ViewData["Title"] = "Đánh giá sản phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<table class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Sản phẩm</th>
+            <th>Khách hàng</th>
+            <th>Đánh giá</th>
+            <th>Bình luận</th>
+            <th>Ngày</th>
+            <th width="100">Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Id</td>
+                <td>@r.ProductName</td>
+                <td>@r.CustomerName</td>
+                <td>
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= r.Rating)
+                        {
+                            <i class="bi bi-star-fill text-warning"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-star text-secondary"></i>
+                        }
+                    }
+                </td>
+                <td style="max-width:300px">
+                    @r.Comment
+                </td>
+                <td>@r.CreatedAt.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <form asp-action="Delete" method="post"
+                          onsubmit="return confirm('Xóa đánh giá này?')">
+                        <input type="hidden" name="id" value="@r.Id" />
+                        <button class="btn btn-delete btn-sm">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

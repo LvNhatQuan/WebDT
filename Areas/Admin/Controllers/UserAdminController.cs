@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WebDT.Areas.Admin.DAL;
 using WebDT.Areas.Admin.Models;
 using WebDT.Models;
@@ -11,6 +12,7 @@ namespace WebDT.Areas.Admin.Controllers
     public class UserAdminController : Controller
     {
         private readonly UserAdminDAL _dal = new UserAdminDAL();
+        private readonly AdminLogDAL _logDAL = new AdminLogDAL();
 
         // ================== INDEX ==================
         public IActionResult Index()
@@ -40,7 +42,7 @@ namespace WebDT.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var model = new UserAdmin
+            return View(new UserAdmin
             {
                 Id = u.Id,
                 Username = u.Username,
@@ -49,9 +51,7 @@ namespace WebDT.Areas.Admin.Controllers
                 PhoneNumber = u.PhoneNumber,
                 Role = u.Role,
                 Password = u.Password
-            };
-
-            return View(model);
+            });
         }
 
         // ================== CREATE (GET) ==================
@@ -78,10 +78,15 @@ namespace WebDT.Areas.Admin.Controllers
                 Role = model.Role
             };
 
-            bool ok = _dal.Create(user);
-
-            if (ok)
+            if (_dal.Create(user))
             {
+                _logDAL.InsertLog(
+                    int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
+                    "Thêm tài khoản",
+                    "Tài khoản",
+                    $"Tạo user username = {model.Username}, role = {model.Role}"
+                );
+
                 TempData["SuccessMessage"] = "Tạo tài khoản thành công.";
                 return RedirectToAction(nameof(Index));
             }
@@ -100,7 +105,7 @@ namespace WebDT.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var model = new UserAdmin
+            return View(new UserAdmin
             {
                 Id = u.Id,
                 Username = u.Username,
@@ -109,9 +114,7 @@ namespace WebDT.Areas.Admin.Controllers
                 PhoneNumber = u.PhoneNumber,
                 Role = u.Role,
                 Password = u.Password
-            };
-
-            return View(model);
+            });
         }
 
         // ================== EDIT (POST) ==================
@@ -122,16 +125,12 @@ namespace WebDT.Areas.Admin.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // lấy user cũ
             var oldUser = _dal.GetById(id);
             if (oldUser == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy tài khoản.";
                 return RedirectToAction(nameof(Index));
             }
-            string passwordToSave = string.IsNullOrEmpty(model.Password)
-                ? oldUser.Password
-                : model.Password;
 
             var user = new User
             {
@@ -141,13 +140,20 @@ namespace WebDT.Areas.Admin.Controllers
                 FullName = model.FullName,
                 PhoneNumber = model.PhoneNumber,
                 Role = model.Role,
-                Password = passwordToSave       
+                Password = string.IsNullOrEmpty(model.Password)
+                    ? oldUser.Password
+                    : model.Password
             };
 
-            bool ok = _dal.Update(user);
-
-            if (ok)
+            if (_dal.Update(user))
             {
+                _logDAL.InsertLog(
+                    int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
+                    "Cập nhật tài khoản",
+                    "Tài khoản",
+                    $"Cập nhật user ID = {id}, role = {model.Role}"
+                );
+
                 TempData["SuccessMessage"] = "Cập nhật tài khoản thành công.";
                 return RedirectToAction(nameof(Index));
             }
@@ -155,7 +161,6 @@ namespace WebDT.Areas.Admin.Controllers
             TempData["ErrorMessage"] = "Cập nhật thất bại.";
             return View(model);
         }
-
 
         // ================== DELETE (GET) ==================
         public IActionResult Delete(int id)
@@ -167,7 +172,7 @@ namespace WebDT.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var model = new UserAdmin
+            return View(new UserAdmin
             {
                 Id = u.Id,
                 Username = u.Username,
@@ -175,9 +180,7 @@ namespace WebDT.Areas.Admin.Controllers
                 FullName = u.FullName,
                 PhoneNumber = u.PhoneNumber,
                 Role = u.Role
-            };
-
-            return View(model);
+            });
         }
 
         // ================== DELETE (POST) ==================
@@ -185,10 +188,15 @@ namespace WebDT.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            bool ok = _dal.Delete(id);
-
-            if (ok)
+            if (_dal.Delete(id))
             {
+                _logDAL.InsertLog(
+                    int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
+                    "Xóa tài khoản",
+                    "Tài khoản",
+                    $"Xóa user ID = {id}"
+                );
+
                 TempData["SuccessMessage"] = "Xóa tài khoản thành công.";
             }
             else

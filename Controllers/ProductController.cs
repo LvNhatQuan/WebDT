@@ -40,9 +40,15 @@ namespace WebDT.Controllers
         public IActionResult Detail(int id)
         {
             var product = _productDal.GetProductById(id);
-
             if (product == null)
-                return NotFound("Không tìm thấy sản phẩm");
+                return NotFound();
+
+            var reviewDal = new ReviewDAL();
+            var reviews = reviewDal.GetByProductId(id);
+
+            ViewBag.Reviews = reviews;
+            ViewBag.ReviewCount = reviews.Count;
+            ViewBag.AvgRating = reviews.Count > 0 ? reviews.Average(r => r.Rating) : 0;
 
             return View(product);
         }

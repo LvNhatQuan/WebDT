@@ -20,11 +20,12 @@ namespace WebDT.Areas.Admin.DAL
                            WHERE role = 'customer'
                            ORDER BY created_at DESC";
 
-            SqlConnection con = _db.getConnecttion();
-            _db.openConnection();
+            using SqlConnection con =
+                new SqlConnection(_db.getConnecttion().ConnectionString);
+            using SqlCommand cmd = new SqlCommand(sql, con);
 
-            SqlCommand cmd = new SqlCommand(sql, con);
-            SqlDataReader rd = cmd.ExecuteReader();
+            con.Open();
+            using SqlDataReader rd = cmd.ExecuteReader();
 
             while (rd.Read())
             {
@@ -39,9 +40,6 @@ namespace WebDT.Areas.Admin.DAL
                 });
             }
 
-            rd.Close();
-            _db.closeConnection();
-
             return list;
         }
 
@@ -50,37 +48,30 @@ namespace WebDT.Areas.Admin.DAL
         // ===============================
         public CustomerAdmin? GetCustomerById(int id)
         {
-            CustomerAdmin? c = null;
-
             string sql = @"SELECT id, username, email, full_name, phone_number, created_at
                            FROM users
                            WHERE id = @id";
 
-            SqlConnection con = _db.getConnecttion();
-            _db.openConnection();
-
-            SqlCommand cmd = new SqlCommand(sql, con);
+            using SqlConnection con =
+                new SqlConnection(_db.getConnecttion().ConnectionString);
+            using SqlCommand cmd = new SqlCommand(sql, con);
             cmd.Parameters.AddWithValue("@id", id);
 
-            SqlDataReader rd = cmd.ExecuteReader();
+            con.Open();
+            using SqlDataReader rd = cmd.ExecuteReader();
 
-            if (rd.Read())
+            if (!rd.Read())
+                return null;
+
+            return new CustomerAdmin
             {
-                c = new CustomerAdmin
-                {
-                    Id = (int)rd["id"],
-                    Username = rd["username"].ToString(),
-                    Email = rd["email"].ToString(),
-                    FullName = rd["full_name"].ToString(),
-                    PhoneNumber = rd["phone_number"].ToString(),
-                    CreatedAt = Convert.ToDateTime(rd["created_at"])
-                };
-            }
-
-            rd.Close();
-            _db.closeConnection();
-
-            return c;
+                Id = (int)rd["id"],
+                Username = rd["username"].ToString(),
+                Email = rd["email"].ToString(),
+                FullName = rd["full_name"].ToString(),
+                PhoneNumber = rd["phone_number"].ToString(),
+                CreatedAt = Convert.ToDateTime(rd["created_at"])
+            };
         }
 
         // ===============================
@@ -95,13 +86,14 @@ namespace WebDT.Areas.Admin.DAL
                            WHERE user_id = @uid
                            ORDER BY order_date DESC";
 
-            SqlConnection con = _db.getConnecttion();
-            _db.openConnection();
-
-            SqlCommand cmd = new SqlCommand(sql, con);
+            // ⭐ TẠO CONNECTION MỚI – FIX LỖI DETAILS
+            using SqlConnection con =
+                new SqlConnection(_db.getConnecttion().ConnectionString);
+            using SqlCommand cmd = new SqlCommand(sql, con);
             cmd.Parameters.AddWithValue("@uid", userId);
 
-            SqlDataReader rd = cmd.ExecuteReader();
+            con.Open();
+            using SqlDataReader rd = cmd.ExecuteReader();
 
             while (rd.Read())
             {
@@ -113,9 +105,6 @@ namespace WebDT.Areas.Admin.DAL
                     Address = rd["shipping_address"].ToString()
                 });
             }
-
-            rd.Close();
-            _db.closeConnection();
 
             return list;
         }

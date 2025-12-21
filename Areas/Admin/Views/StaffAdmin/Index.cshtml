@@ -1,0 +1,75 @@
+﻿@model List<WebDT.Areas.Admin.Models.StaffAdmin>
+@{
+    ViewData["Title"] = "Quản lý nhân viên";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div></div>
+    <a asp-action="Create" class="btn btn-add">
+        <i class="bi bi-plus-circle"></i> Thêm nhân viên
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<table class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Họ tên</th>
+            <th>SĐT</th>
+            <th>Trạng thái</th>
+            <th width="160">Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            <tr>
+                <td>@s.Id</td>
+                <td>@s.Username</td>
+                <td>@s.Email</td>
+                <td>@s.FullName</td>
+                <td>@s.PhoneNumber</td>
+                <td>
+                    @if (s.IsLocked)
+                    {
+                        <span class="badge bg-danger">Bị khóa</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Hoạt động</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@s.Id"
+                       class="btn btn-edit btn-sm">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+
+                    <form asp-action="ToggleLock"
+                          method="post"
+                          style="display:inline">
+                        <input type="hidden" name="id" value="@s.Id" />
+                        <input type="hidden" name="lockState" value="@(!s.IsLocked)" />
+                        <button type="submit"
+                                class="btn btn-delete btn-sm"
+                                onclick="return confirm('Xác nhận thay đổi trạng thái?')">
+                            <i class="bi bi-lock-fill"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,35 @@
+﻿@model List<WebDT.Areas.Admin.Models.AdminLog>
+@{
+    ViewData["Title"] = "Nhật ký quản lý";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<table class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Tài khoản</th>
+            <th>Vai trò</th>
+            <th>Hành động</th>
+            <th>Module</th>
+            <th>Mô tả</th>
+            <th>Thời gian</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var l in Model)
+        {
+            <tr>
+                <td>@l.Id</td>
+                <td>@l.Username</td>
+                <td>
+                    <span class="badge bg-dark">@l.Role</span>
+                </td>
+                <td>@l.Action</td>
+                <td>@l.Module</td>
+                <td>@l.Description</td>
+                <td>@l.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>
