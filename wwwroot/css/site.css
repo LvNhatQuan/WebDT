@@ -22,6 +22,211 @@ body {
     background: #F1EEEE;
 }
 
+/* ================== NAVBAR RESPONSIVE ================== */
+.navbar {
+    padding: 4px 0;
+    background-color: #ffe4e1 !important;
+    position: relative;
+}
+
+    /* Container navbar */
+    .navbar > .container-fluid {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 70px;
+        flex-wrap: nowrap; /* QUAN TRỌNG: Không xuống dòng */
+    }
+
+/* ================== LOGO ================== */
+.navbar-brand {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    margin-right: 20px;
+}
+
+.logo-blend {
+    mix-blend-mode: multiply;
+    max-height: 60px !important;
+    height: 60px;
+    object-fit: contain;
+}
+
+/* ================== MENU CHÍNH ================== */
+/* Wrapper cho menu chính (căn giữa) */
+.navbar > .container-fluid > div:first-of-type {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    min-width: 0; /* QUAN TRỌNG: Cho phép shrink */
+}
+
+.navbar-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    min-width: 0;
+}
+
+    .navbar-nav .nav-item {
+        flex: 0 0 auto;
+        text-align: center;
+        position: relative;
+    }
+
+    .navbar-nav .nav-link {
+        font-size: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 6px 12px;
+        line-height: 1.2;
+        letter-spacing: 0.35px;
+        color: #111 !important;
+        transition: color 0.2s ease;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        height: 100%;
+    }
+
+        /* Hover menu */
+        .navbar-nav .nav-link:hover {
+            color: #0a8f3c !important;
+        }
+
+        /* Menu active */
+        .navbar-nav .nav-link.active {
+            color: #0a8f3c !important;
+            border-bottom: 2px solid #0a8f3c;
+        }
+
+/* ================== DROPDOWN ================== */
+.nav-item.dropdown .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 4px;
+    min-width: 180px;
+    text-align: center;
+    border-radius: 10px;
+    border: 1px solid #f3c6c6;
+    background-color: #fff;
+    padding: 6px 0;
+    display: none;
+    z-index: 1000;
+}
+
+/* Hover để xổ dropdown */
+.nav-item.dropdown:hover > .dropdown-menu {
+    display: block;
+}
+
+/* Item dropdown */
+.dropdown-item {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+    .dropdown-item:hover {
+        background-color: #ffe4e1;
+        color: #0a8f3c;
+    }
+
+/* ================== CART + LOGIN ================== */
+/* Wrapper bên phải */
+.navbar > .container-fluid > div:last-of-type {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+}
+
+.btn-login {
+    white-space: nowrap;
+}
+
+/* ================== RESPONSIVE ================== */
+/* Trên tablet (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .navbar-nav .nav-link {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+
+    .logo-blend {
+        max-height: 55px !important;
+        height: 55px;
+    }
+
+    .navbar > .container-fluid {
+        min-height: 65px;
+    }
+}
+
+/* Trên mobile nhỏ (< 768px) */
+@media (max-width: 767px) {
+    /* Cho phép scroll ngang trên mobile */
+    .navbar {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+        /* Tăng chiều rộng container để đủ chỗ cho tất cả item */
+        .navbar > .container-fluid {
+            min-width: 750px; /* Đủ rộng để chứa tất cả */
+            padding-right: 20px;
+        }
+
+    /* Giảm kích thước trên mobile */
+    .navbar-nav .nav-link {
+        font-size: 13px;
+        padding: 5px 8px;
+    }
+
+    .logo-blend {
+        max-height: 50px !important;
+        height: 50px;
+    }
+
+    .navbar > .container-fluid {
+        min-height: 60px;
+    }
+
+    /* Giảm padding button trên mobile */
+    .btn {
+        padding: 5px 12px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* Rất nhỏ (< 480px) */
+@media (max-width: 480px) {
+    .navbar > .container-fluid {
+        min-width: 650px;
+    }
+
+    .navbar-nav .nav-link {
+        font-size: 12px;
+        padding: 4px 6px;
+    }
+
+    .logo-blend {
+        max-height: 45px !important;
+        height: 45px;
+    }
+}
+
+/* ================== PHẦN CSS CŨ GIỮ NGUYÊN ================== */
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
     color: var(--bs-secondary-color);
     text-align: end;
@@ -40,34 +245,32 @@ body {
 }
 
 .border1 {
-    /* border: độ_dày kiểu_viền màu_viền; */
     border: 2px solid #D8B1B1 !important;
-    /* Lệnh này để khử bo tròn */
     border-radius: 0 !important;
 }
-/* 1. Tạo khung viền cho Fieldset */
+
+/* Fieldset */
 .custom-fieldset {
-    border: 1px solid #F1A3A2; /* Màu hồng giống theme của bạn */
-    padding: 20px; /* Khoảng cách từ viền vào sản phẩm */
-    margin: 30px; /* Cách các phần khác ra */
+    border: 1px solid #F1A3A2;
+    padding: 20px;
+    margin: 30px;
     position: relative;
 }
 
-    /* 2. Chỉnh lại Legend (Tiêu đề) */
     .custom-fieldset legend {
-        width: auto; /* QUAN TRỌNG: Gỡ bỏ width 100% của Bootstrap */
-        float: none; /* Gỡ bỏ float của Bootstrap */
-        margin: 0 auto; /* Căn giữa tiêu đề */
-        padding: 0 15px; /* Tạo khoảng trắng 2 bên chữ để không dính viền */
+        width: auto;
+        float: none;
+        margin: 0 auto;
+        padding: 0 15px;
         font-weight: bold;
         font-size: 1.5rem;
-        color: #00A85A; /* Màu chữ giống viền */
+        color: #00A85A;
         text-transform: uppercase;
-        /* Mẹo để chữ nằm đè lên đường viền */
-        background-color: #F1EEEE; /* Nền trắng để che đoạn viền đi qua chữ */
+        background-color: #F1EEEE;
         transform: translateY(-50%);
     }
-/* Vẫn giữ đoạn này để Icon và Input dính liền nhau đẹp mắt */
+
+/* Input group */
 .input-group:focus-within .input-group-text {
     border-color: black !important;
     background-color: #f8f9fa;
@@ -87,35 +290,51 @@ body {
 .dropdown-toggle::after {
     display: none;
 }
-/* Ẩn mũi tên tăng giảm mặc định của browser */
+
+/* Ẩn mũi tên tăng giảm */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-/* Ẩn trên Firefox */
 input[type=number] {
     -moz-appearance: textfield;
 }
 
+/* Button */
 .btn2 {
     height: 70px;
     width: 200px;
     background: #E25E77;
 }
-/* 1. Class cho thẻ cha (thẻ a) */
+
+/* Zoom effect */
 .zoom-container {
     overflow: hidden;
     display: block;
 }
 
-/* 2. Thiết lập chuyển động mượt mà cho ảnh */
 .zoom-img {
-    transition: transform 0.5s ease; /* Thời gian phóng to là 0.5 giây */
+    transition: transform 0.5s ease;
 }
 
-/* 3. Khi di chuột vào thẻ cha thì ảnh con sẽ phóng to */
 .zoom-container:hover .zoom-img {
     transform: scale(1.1);
+}
+
+/* Cart blend */
+.cart-blend img {
+    mix-blend-mode: multiply;
+    filter: contrast(1.15);
+}
+
+/* Fix cho dropdown hover area */
+.nav-item.dropdown::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 10px;
+    bottom: -10px;
 }

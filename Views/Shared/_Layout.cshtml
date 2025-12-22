@@ -34,50 +34,94 @@
 
     <!-- ================= NAVBAR ================= -->
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light border-bottom box-shadow mb-3"
+        <nav class="navbar navbar-light border-bottom box-shadow mb-3"
              style="background-color:#ffe4e1;">
-            <div class="container-fluid">
+            <div class="container-fluid d-flex align-items-center justify-content-between">
 
                 <!-- LOGO -->
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
-                    <img src="/Images/d&t.jpg" alt="D&T Group" style="height:40px; mix-blend-mode:multiply;">
+                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <img src="/Images/d&t.jpg" alt="D&T Group"
+                         class="logo-blend img-fluid"
+                         style="max-height: 80px;">
                 </a>
 
-                <!-- TOGGLER -->
-                <button class="navbar-toggler" type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#mainNavbar">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <!-- MENU CHÍNH - LUÔN HIỂN THỊ -->
+                <div class="d-flex align-items-center w-100 justify-content-center">
+                    <ul class="navbar-nav d-flex flex-row justify-content-center align-items-center mb-0">
 
-                <!-- MENU -->
-                <div class="collapse navbar-collapse justify-content-between" id="mainNavbar">
-                    <ul class="navbar-nav">
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
+                        <li class="nav-item mx-2 mx-lg-3">
+                            <a class="nav-link text-dark fw-bold text-uppercase
+                                  px-2 px-lg-3
+                                  py-2 py-lg-3
+                                  fs-6 fs-lg-5"
                                asp-controller="Home" asp-action="Index">
                                 TRANG CHỦ
                             </a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
+                        <li class="nav-item mx-2 mx-lg-3">
+                            <a class="nav-link text-dark fw-bold text-uppercase
+                                  px-2 px-lg-3
+                                  py-2 py-lg-3
+                                  fs-6 fs-lg-5"
                                asp-controller="Introduce" asp-action="Index">
                                 GIỚI THIỆU
                             </a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
-                               asp-controller="Product" asp-action="Index">
+                        <li class="nav-item dropdown mx-2 mx-lg-3">
+                            <a class="nav-link dropdown-toggle text-dark fw-bold text-uppercase
+                                  px-2 px-lg-3
+py-2 py-lg-3
+                                  fs-6 fs-lg-5"
+                               href="#"
+                               id="productDropdown"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
                                 SẢN PHẨM
                             </a>
+                            <ul class="dropdown-menu"
+                                aria-labelledby="productDropdown">
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Product"
+                                       asp-action="Index">
+                                        Yến Sào
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Product"
+                                       asp-action="Category"
+                                       asp-route-id="1">
+                                        Rong Nho
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Product"
+                                       asp-action="Category"
+                                       asp-route-id="2">
+                                        Thạch
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Product"
+                                       asp-action="Category"
+                                       asp-route-id="3">
+                                        Chè Yến
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
 
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
+                        <li class="nav-item mx-2 mx-lg-3">
+                            <a class="nav-link text-dark fw-bold text-uppercase
+                                  px-2 px-lg-3
+                                  py-2 py-lg-3
+                                  fs-6 fs-lg-5"
                                asp-controller="Contact"
                                asp-action="Index">
                                 LIÊN HỆ
@@ -85,51 +129,54 @@
                         </li>
 
                     </ul>
-                    <!-- CART + LOGIN -->
-                    <div class="d-flex align-items-center gap-3">
+                </div>
 
-                        @await Component.InvokeAsync("Cart")
+                <!-- CART + LOGIN (bên phải) -->
+                <div class="d-flex align-items-center gap-2 gap-lg-3">
+                    @await Component.InvokeAsync("Cart")
 
-                        @if (User.Identity != null && User.Identity.IsAuthenticated)
-                        {
-                            <div class="dropdown">
-                                <button class="btn btn-outline-dark dropdown-toggle rounded-pill"
-                                        type="button"
-                                        data-bs-toggle="dropdown">
-                                    👤 @User.Identity.Name
-                                </button>
-
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item"
-                                           asp-controller="Account"
-                                           asp-action="Profile">
-                                            Thông tin cá nhân
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <form asp-controller="Account"
-                                              asp-action="Logout"
-                                              method="get">
-                                            <button class="dropdown-item text-danger" type="submit">
-                                                Đăng xuất
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
-                        }
-                        else
-                        {
-                            <a asp-controller="Account"
-                               asp-action="Login"
-                               class="btn btn-danger rounded-pill">
-                                Đăng nhập
-                            </a>
-                        }
-
-                    </div>
-
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <div class="dropdown">
+                            <button class="btn btn-outline-dark dropdown-toggle rounded-pill
+                                              py-1 py-lg-2
+                                              px-3 px-lg-4
+                                              fs-6 fs-lg-5"
+                                    type="button"
+                                    data-bs-toggle="dropdown">
+                                👤 @User.Identity.Name
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-controller="Account"
+                                       asp-action="Profile">
+                                        Thông tin cá nhân
+                                    </a>
+                                </li>
+                                <li>
+                                    <form asp-controller="Account"
+                                          asp-action="Logout"
+                                          method="get">
+                                        <button class="dropdown-item text-danger" type="submit">
+                                            Đăng xuất
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account"
+                           asp-action="Login"
+                           class="btn btn-danger rounded-pill
+                                      py-1 py-lg-2
+                                      px-3 px-lg-4
+                                      fs-6 fs-lg-5">
+                            Đăng nhập
+                        </a>
+                    }
                 </div>
             </div>
         </nav>
@@ -139,79 +186,93 @@
     <main class="container mt-4">
         @RenderBody()
     </main>
-    <footer class="border-top footer text-muted mt-auto" style="background:#FFD4CD; font-size:17px">
-        <div class="container py-4">
-            <div class="row g-4">
 
-                <div class="col-12 col-lg-2 text-center text-lg-start">
-                    <img src="~/img/logo-dt-group.jpg"
-                         class="img-fluid rounded"
-                         alt="Logo DT Group"
-                         style="max-height:150px; mix-blend-mode: multiply;" />
-                </div>
+    <!-- ================= FOOTER ================= -->
+    <footer class="border-top text-dark pt-4 pb-4" style="background-color: #ffe4e1;">
+        <div class="container">
+            <div class="row">
 
-                <div class="col-12 col-md-6 col-lg-4 text-center text-lg-start">
-                    <h5 class="fw-bold text-dark mb-3">CÔNG TY TNHH DT GROUP</h5>
-                    <div class="text-dark">
-                        <p class="mb-2">GPKD Số 4201794039 do Sở KH và ĐT TP Nha Trang cấp ngày 23/05/2018</p>
-                        <p class="mb-2">Địa chỉ: KCN Đắc Lộc, Vĩnh Phương, Tp. Nha Trang, Khánh Hòa</p>
-                        <p class="mb-2">Chuyên sản xuất, phân phối và kinh doanh thương mại các loại thực phẩm, mỹ phẩm làm đẹp từ nguyên liệu thiên nhiên – đặc sản của Việt Nam.</p>
+                <!-- CỘT 1: THÔNG TIN CÔNG TY -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="d-flex">
+                        <img src="/Images/d&t.jpg" style="height:60px" class="me-3">
+                        <div>
+                            <h6 class="fw-bold">CÔNG TY TNHH DT GROUP</h6>
+                            <p class="small mb-1">GPKD Số 4201794039 do Sở KH và DT TP Nha Trang cấp ngày 23/05/2018</p>
+                            <p class="small mb-1">Địa chỉ: KCN Đắc Lộc, Vĩnh Phương, Tp. Nha Trang, Khánh Hòa</p>
+                            <p class="small mb-1">Chuyên sản xuất, phân phối và kinh doanh thương mại các loại thực phẩm, mỹ phẩm làm đẹp từ nguyên liệu thiên nhiên – đặc sản của Việt Nam.</p>
+                            <p class="small mb-0">© Bản quyền thuộc về DTGROUP</p>
+                        </div>
                     </div>
-                    <p class="text-dark fw-bold mt-3">© Bản quyền thuộc về DTGROUP</p>
                 </div>
 
-                <div class="col-12 col-md-6 col-lg-3 text-center text-lg-start">
-                    <h5 class="fw-bold text-dark mb-3">CHÍNH SÁCH</h5>
-                    <ul class="list-unstyled text-dark ps-0">
-                        <li class="mb-2"><a href="/Home/Privacy#list-payment" class="text-decoration-none text-dark hover-link">Chính sách thanh toán</a></li>
-                        <li class="mb-2"><a href="/Home/Privacy#list-complaint" class="text-decoration-none text-dark hover-link">Chính sách khiếu nại</a></li>
-                        <li class="mb-2"><a href="/Home/Privacy#list-shipping" class="text-decoration-none text-dark hover-link">Chính sách vận chuyển</a></li>
-                        <li class="mb-2"><a href="/Home/Privacy#list-return" class="text-decoration-none text-dark hover-link">Chính sách đổi trả & hoàn tiền</a></li>
-                        <li class="mb-2"><a href="/Home/Privacy#list-warranty" class="text-decoration-none text-dark hover-link">Chính sách bảo hành</a></li>
-                        <li class="mb-2"><a href="/Home/Privacy#list-inspection" class="text-decoration-none text-dark hover-link">Chính sách kiểm hàng</a></li>
-                        <li class="mb-2"><a href="/Home/Privacy#list-privacy" class="text-decoration-none text-dark hover-link">Bảo mật thông tin</a></li>
-                        <li class="mt-3">
-                            <a href="http://online.gov.vn/Home/WebDetails/100511?AspxAutoDetectCookieSupport=1" target="_blank">
-                                <span class="text-decoration-underline text-dark fw-bold">Đăng ký bộ công thương</span>
-                            </a>
-                        </li>
+                <!-- CỘT 2: CHÍNH SÁCH -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h6 class="fw-bold mb-3">CHÍNH SÁCH</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách thanh toán</a></li>
+                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách khiếu nại</a></li>
+                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách vận chuyển</a></li>
+                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách đổi trả và hoàn tiền</a></li>
+                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách bảo hành</a></li>
+                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách kiểm hàng</a></li>
+                        <li class="mb-0"><a href="#" class="text-dark text-decoration-none">Chính sách bảo mật thông tin</a></li>
                     </ul>
                 </div>
 
-                <div class="col-12 col-md-6 col-lg-3 text-center text-lg-start">
-                    <h5 class="fw-bold text-dark mb-3">LIÊN HỆ</h5>
+                <!-- CỘT 3: LIÊN HỆ -->
+                <div class="col-lg-4 col-md-12 mb-4">
+                    <h6 class="fw-bold mb-3">LIÊN HỆ</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2 d-flex align-items-start">
+                            <i class="bi bi-geo-alt me-2" style="min-width: 20px;"></i>
+                            <span>KCN Đắc Lộc, Vĩnh Phương, TP. Nha Trang</span>
+                        </li>
+                        <li class="mb-2 d-flex align-items-start">
+                            <i class="bi bi-envelope me-2" style="min-width: 20px;"></i>
+                            <span>info@dtvietnam.com</span>
+                        </li>
+                        <li class="mb-2 d-flex align-items-start">
+                            <i class="bi bi-telephone me-2" style="min-width: 20px;"></i>
+                            <span>Gọi mua: 0833.416.868</span>
+                        </li>
+                        <li class="mb-0 d-flex align-items-start">
+                            <i class="bi bi-headset me-2" style="min-width: 20px;"></i>
+                            <span>Khiếu nại: 0847.236.868</span>
+                        </li>
+                    </ul>
 
-                    <div class="d-flex flex-column align-items-center align-items-lg-start gap-3">
-                        <div class="d-flex align-items-start">
-                            <i class="fa-solid fa-house mt-1 me-2 text-danger"></i>
-                            <span>KCN Đắc Lộc, Vĩnh Phương, Tp. Nha Trang, Khánh Hòa</span>
-                        </div>
+                    <!-- Thêm font awesome hoặc bootstrap icons nếu muốn dùng icon -->
+                    <style>
+                        .bi {
+                            display: inline-block;
+                            width: 1em;
+                            height: 1em;
+                            background-size: contain;
+                            background-repeat: no-repeat;
+                        }
 
-                        <div class="d-flex align-items-center">
-                            <i class="fa-solid fa-envelope me-2 text-danger"></i>
-                            <a href="mailto:info@dtvietnam.com" class="text-dark text-decoration-none">info@dtvietnam.com</a>
-                        </div>
+                        .bi-geo-alt {
+                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z'/%3E%3Cpath d='M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z'/%3E%3C/svg%3E");
+                        }
 
-                        <div class="d-flex align-items-start">
-                            <i class="fa-solid fa-phone mt-1 me-2 text-danger"></i>
-                            <div>
-                                <div><strong>Gọi mua:</strong> 0833.416.868</div>
-                                <div><strong>Khiếu nại:</strong> 0847.236.868</div>
-                            </div>
-                        </div>
-                    </div>
+                        .bi-envelope {
+                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z'/%3E%3C/svg%3E");
+                        }
+
+                        .bi-telephone {
+                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z'/%3E%3C/svg%3E");
+                        }
+
+                        .bi-headset {
+                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5z'/%3E%3C/svg%3E");
+                        }
+                    </style>
                 </div>
 
             </div>
         </div>
     </footer>
-
-    <style>
-        .hover-link:hover {
-            color: #d32f2f !important; /* Màu đỏ đậm khi di chuột vào */
-            text-decoration: underline !important;
-        }
-    </style>
 
     <!-- ================= JS ================= -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
