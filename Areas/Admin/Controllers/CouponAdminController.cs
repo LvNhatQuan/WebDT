@@ -164,10 +164,25 @@ namespace WebDT.Areas.Admin.Controllers
             return View(model);
         }
 
-        // ================== DELETE (POST) ==================
+        // ================== DELETE (GET) - Hiển thị trang xác nhận ==================
+        public IActionResult Delete(int id)
+        {
+            var coupon = _dal.GetById(id);
+            if (coupon == null) return RedirectToAction(nameof(Index));
+
+            var productCount = _dal.GetProductsByCouponId(id).Count;
+
+            // Tạo dynamic model để truyền dữ liệu
+            ViewBag.Coupon = coupon;
+            ViewBag.ProductCount = productCount;
+
+            return View();
+        }
+
+        // ================== DELETE (POST) - Xác nhận xóa ==================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public IActionResult Delete(int id, bool confirm = false)
         {
             if (_dal.Delete(id))
             {
@@ -182,6 +197,39 @@ namespace WebDT.Areas.Admin.Controllers
             else
             {
                 TempData["ErrorMessage"] = "Xóa mã giảm giá thất bại.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ================== TOGGLE STATUS (POST) ==================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ActionName("ToggleStatus")]
+        public IActionResult ToggleStatusPost(int id)
+        {
+            var coupon = _dal.GetById(id);
+            if (coupon != null)
+            {
+                var newStatus = !coupon.IsActive;
+                if (_dal.UpdateStatus(id, newStatus))
+                {
+                    _logDAL.InsertLog(
+                        int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
+                        "Thay đổi trạng thái giảm giá",
+                        "Giảm giá",
+                        $"Thay đổi trạng thái coupon ID = {id} thành {(newStatus ? "Bật" : "Tắt")}"
+                    );
+                    TempData["SuccessMessage"] = "Thay đổi trạng thái thành công.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Thay đổi trạng thái thất bại.";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy mã giảm giá.";
             }
 
             return RedirectToAction(nameof(Index));

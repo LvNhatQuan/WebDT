@@ -1,7 +1,6 @@
 ﻿@{
-    var coupon = ViewBag.Coupon ?? Model.Coupon;
-    var products = ViewBag.Products ?? Model.Products;
-    var productCount = ViewBag.ProductCount ?? Model.ProductCount;
+    var coupon = ViewBag.Coupon as WebDT.Areas.Admin.Models.CouponAdmin;
+    var productCount = ViewBag.ProductCount ?? 0;
 }
 
 <h2 class="h4 mb-3 text-danger">Xóa mã giảm giá</h2>
@@ -10,8 +9,8 @@
 {
     <div class="alert alert-danger">
         <i class="bi bi-exclamation-triangle-fill"></i>
-        <strong>Cảnh báo:</strong> Có @productCount sản phẩm đang áp dụng mã giảm giá này.
-        Nếu xóa, các sản phẩm này sẽ không còn được giảm giá.
+        <strong>Cảnh báo:</strong> Mã giảm giá này đang được sử dụng trong hệ thống.
+        Nếu xóa, mã sẽ được vô hiệu hóa và gỡ khỏi tất cả sản phẩm.
     </div>
 }
 else
@@ -62,8 +61,13 @@ else
         {
             <div class="alert alert-info mt-3">
                 <i class="bi bi-info-circle-fill"></i>
-                <strong>Lưu ý:</strong> Nếu mã giảm giá đang được sử dụng trong sản phẩm,
-                hệ thống sẽ chỉ vô hiệu hóa (không xóa hoàn toàn).
+                <strong>Lưu ý:</strong> Vì mã giảm giá đang được sử dụng, hệ thống sẽ:
+                <ul class="mb-0 mt-2">
+                    <li>Vô hiệu hóa mã giảm giá (is_active = 0)</li>
+                    <li>Gỡ mã khỏi tất cả sản phẩm</li>
+                    <li>Gỡ mã khỏi giỏ hàng của khách</li>
+                    <li>Giữ lại lịch sử trong đơn hàng đã đặt</li>
+                </ul>
             </div>
         }
     </div>
@@ -72,36 +76,45 @@ else
 <form asp-area="Admin" asp-controller="CouponAdmin" asp-action="Delete" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" name="id" value="@coupon.Id" />
+    <input type="hidden" name="confirm" value="true" />
 
-    @if (productCount > 0)
-    {
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="confirmDelete" required>
-            <label class="form-check-label text-danger" for="confirmDelete">
-                Tôi hiểu rằng @productCount sản phẩm sẽ bị ảnh hưởng và đồng ý xóa
-            </label>
-        </div>
-    }
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+        <label class="form-check-label text-danger" for="confirmDelete">
+            @if (productCount > 0)
+            {
+                <span>Tôi hiểu rằng mã giảm giá sẽ được vô hiệu hóa và gỡ khỏi tất cả sản phẩm, giỏ hàng</span>
+            }
+            else
+            {
+                <span>Tôi hiểu rằng mã giảm giá sẽ bị xóa vĩnh viễn khỏi hệ thống</span>
+            }
+        </label>
+    </div>
 
     <button type="submit" class="btn btn-danger"
-            @(productCount > 0 ? "disabled" : "")
+            disabled
             id="deleteButton">
-        Xác nhận xóa
+        @if (productCount > 0)
+        {
+            <span>Vô hiệu hóa mã giảm giá</span>
+        }
+        else
+        {
+            <span>Xóa vĩnh viễn</span>
+        }
     </button>
     <a asp-area="Admin" asp-controller="CouponAdmin" asp-action="Index"
        class="btn btn-secondary ms-1">Hủy bỏ</a>
 </form>
 
-@if (productCount > 0)
-{
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkbox = document.getElementById('confirmDelete');
-            const deleteButton = document.getElementById('deleteButton');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkbox = document.getElementById('confirmDelete');
+        const deleteButton = document.getElementById('deleteButton');
 
-            checkbox.addEventListener('change', function() {
-                deleteButton.disabled = !this.checked;
-            });
+        checkbox.addEventListener('change', function() {
+            deleteButton.disabled = !this.checked;
         });
-    </script>
-}
+    });
+</script>

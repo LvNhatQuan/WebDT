@@ -1,5 +1,5 @@
 ﻿@model List<WebDT.Areas.Admin.Models.CouponAdmin>
-﻿@{
+@{
     ViewData["Title"] = "Quản lý mã giảm giá";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
 }
@@ -46,12 +46,12 @@
                         {
                             var isExpired = item.EndDate < DateTime.Now;
                             var isUpcoming = item.StartDate > DateTime.Now;
-                            
+
                             <tr>
                                 <td class="ps-3">
                                     <div class="fw-medium">@item.EventName</div>
                                     <div class="small text-muted">
-                                        #@item.Id • 
+                                        #@item.Id •
                                         @item.StartDate.ToString("dd/MM/yyyy") - @item.EndDate.ToString("dd/MM/yyyy")
                                     </div>
                                 </td>
@@ -86,7 +86,8 @@
                                            asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <form asp-action="ToggleStatus" method="post" class="d-inline">
+                                        <form asp-area="Admin" asp-controller="CouponAdmin" asp-action="ToggleStatus"
+                                              method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@item.Id" />
                                             <button type="submit" class="btn btn-sm @(item.IsActive ? "btn-outline-warning" : "btn-outline-success")"
@@ -118,7 +119,7 @@
             <div class="text-center py-5">
                 <i class="bi bi-tag text-muted" style="font-size: 3rem;"></i>
                 <p class="text-muted mt-3">Chưa có mã giảm giá nào</p>
-                <a asp-area="Admin" asp-controller="CouponAdmin" asp-action="Create" 
+                <a asp-area="Admin" asp-controller="CouponAdmin" asp-action="Create"
                    class="btn btn-primary mt-2">
                     <i class="bi bi-plus-circle"></i> Tạo mã đầu tiên
                 </a>
@@ -127,36 +128,10 @@
     </div>
 </div>
 
-<style>
-    .table th {
-        font-weight: 600;
-        font-size: 0.875rem;
-        text-transform: uppercase;
-        color: #6c757d;
-        border-bottom: 2px solid #dee2e6;
-    }
-    
-    .table td {
-        vertical-align: middle;
-        padding: 0.75rem;
-    }
-    
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
-    }
-    
-    .badge {
-        font-weight: 500;
-        padding: 0.35em 0.65em;
-        font-size: 0.75em;
-    }
-</style>
-
 @section Scripts {
     <script>
         // Xác nhận trước khi thay đổi trạng thái
-        document.querySelectorAll('form[asp-action="ToggleStatus"] button').forEach(button => {
+        document.querySelectorAll('form[action*="ToggleStatus"] button').forEach(button => {
             button.addEventListener('click', function(e) {
                 if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái mã giảm giá này?')) {
                     e.preventDefault();

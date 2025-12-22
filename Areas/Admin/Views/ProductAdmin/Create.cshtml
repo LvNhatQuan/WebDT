@@ -1,6 +1,5 @@
 ﻿@model WebDT.Areas.Admin.Models.ProductFormAdmin
 
-
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">
@@ -19,6 +18,7 @@
               enctype="multipart/form-data">
             @Html.AntiForgeryToken()
 
+            <!-- Hiển thị lỗi chung (bao gồm lỗi upload ảnh) -->
             <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
             <div class="mb-3">
@@ -61,14 +61,33 @@
                 <label asp-for="IsActive" class="form-check-label"></label>
             </div>
 
+            <!-- ẢNH SẢN PHẨM -->
             <div class="mb-3">
-                <label class="form-label">Ảnh sản phẩm</label>
-                <input type="file" name="Img" class="form-control" />
+                <label class="form-label">
+                    Ảnh sản phẩm <span class="text-danger">*</span>
+                </label>
+
+                <input type="file"
+                       name="Img"
+                       class="form-control"
+                       accept="image/png,image/jpeg,image/jpg,image/webp"
+                       required />
+
+                <!-- Lỗi upload ảnh từ server -->
+               
+
+                <small class="text-muted">
+                    Chỉ chấp nhận ảnh (.jpg, .png, .webp)
+                </small>
             </div>
 
             <button type="submit" class="btn btn-primary me-2">Lưu</button>
-            <a asp-area="Admin" asp-controller="ProductAdmin" asp-action="Index"
-               class="btn btn-secondary">Quay lại</a>
+            <a asp-area="Admin"
+               asp-controller="ProductAdmin"
+               asp-action="Index"
+               class="btn btn-secondary">
+                Quay lại
+            </a>
         </form>
     </div>
 </div>

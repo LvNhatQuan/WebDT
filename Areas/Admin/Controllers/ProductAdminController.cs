@@ -16,7 +16,7 @@ namespace WebDT.Areas.Admin.Controllers
     {
         private readonly ProductAdminDAL productDAL = new ProductAdminDAL();
         private readonly CategoryAdminDAL categoryDAL = new CategoryAdminDAL();
-        private readonly AdminLogDAL _logDAL = new AdminLogDAL();
+        private readonly AdminLogDAL logDAL = new AdminLogDAL();
 
         // ==================== INDEX ====================
         public IActionResult Index()
@@ -43,12 +43,7 @@ namespace WebDT.Areas.Admin.Controllers
             {
                 IsActive = true,
                 StockQuantity = 0,
-                ListCategory = categoryDAL.getAll()
-                    .Select(c => new SelectListItem
-                    {
-                        Text = c.Name,
-                        Value = c.Id.ToString()
-                    }).ToList()
+                ListCategory = GetCategorySelectList()
             });
         }
 
@@ -57,6 +52,7 @@ namespace WebDT.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(ProductFormAdmin model, IFormFile Img)
         {
+            // Validate category
             if (model.CategoryIdSelected.HasValue)
                 model.CategoryId = model.CategoryIdSelected.Value;
             else
@@ -64,25 +60,33 @@ namespace WebDT.Areas.Admin.Controllers
 
             ModelState.Remove(nameof(model.CategoryId));
 
+            // Validate image bắt buộc
+            if (Img == null || Img.Length == 0)
+            {
+                ModelState.AddModelError("", "Vui lòng chọn ảnh sản phẩm");
+            }
+
             if (!ModelState.IsValid)
             {
-                model.ListCategory = categoryDAL.getAll()
-                    .Select(c => new SelectListItem
-                    {
-                        Text = c.Name,
-                        Value = c.Id.ToString()
-                    }).ToList();
+                model.ListCategory = GetCategorySelectList();
                 return View(model);
             }
 
-            model.CreatedAt = DateTime.Now;
-            model.ImageUrl = Img != null && Img.Length > 0
-                ? ImageHelper.UpLoadImage(Img, "SanPham")
-                : string.Empty;
+            try
+            {
+                model.CreatedAt = DateTime.Now;
+                model.ImageUrl = ImageHelper.UpLoadImage(Img, "SanPham");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                model.ListCategory = GetCategorySelectList();
+                return View(model);
+            }
 
             if (productDAL.AddNew(model))
             {
-                _logDAL.InsertLog(
+                logDAL.InsertLog(
                     int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
                     "Thêm sản phẩm",
                     "Sản phẩm",
@@ -94,6 +98,7 @@ namespace WebDT.Areas.Admin.Controllers
             }
 
             TempData["ErrorMessage"] = "Không thể thêm sản phẩm";
+            model.ListCategory = GetCategorySelectList();
             return View(model);
         }
 
@@ -116,13 +121,7 @@ namespace WebDT.Areas.Admin.Controllers
                 CreatedAt = product.CreatedAt,
                 CategoryId = product.CategoryId,
                 CategoryIdSelected = product.CategoryId,
-                ListCategory = categoryDAL.getAll()
-                    .Select(c => new SelectListItem
-                    {
-                        Text = c.Name,
-                        Value = c.Id.ToString(),
-                        Selected = c.Id == product.CategoryId
-                    }).ToList()
+                ListCategory = GetCategorySelectList(product.CategoryId)
             });
         }
 
@@ -139,22 +138,40 @@ namespace WebDT.Areas.Admin.Controllers
             ModelState.Remove(nameof(model.CategoryId));
 
             if (!ModelState.IsValid)
+            {
+                model.ListCategory = GetCategorySelectList(model.CategoryIdSelected);
                 return View(model);
+            }
 
             var old = productDAL.GetProductById(id);
-            if (old == null)
+            if (old == null || old.Id == 0)
                 return RedirectToAction(nameof(Index));
 
-            model.ImageUrl = ImageUpload != null && ImageUpload.Length > 0
-                ? ImageHelper.UpLoadImage(ImageUpload, "SanPham")
-                : old.ImageUrl;
+            try
+            {
+                // Nếu upload ảnh mới → validate + lưu
+                if (ImageUpload != null && ImageUpload.Length > 0)
+                {
+                    model.ImageUrl = ImageHelper.UpLoadImage(ImageUpload, "SanPham");
+                }
+                else
+                {
+                    model.ImageUrl = old.ImageUrl;
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                model.ListCategory = GetCategorySelectList(model.CategoryIdSelected);
+                return View(model);
+            }
 
-            model.CreatedAt = old.CreatedAt;
             model.Id = id;
+            model.CreatedAt = old.CreatedAt;
 
             if (productDAL.UpdateProduct(model, id))
             {
-                _logDAL.InsertLog(
+                logDAL.InsertLog(
                     int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
                     "Cập nhật sản phẩm",
                     "Sản phẩm",
@@ -165,7 +182,8 @@ namespace WebDT.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["ErrorMessage"] = "Cập nhật thất bại";
+            TempData["ErrorMessage"] = "Cập nhật sản phẩm thất bại";
+            model.ListCategory = GetCategorySelectList(model.CategoryIdSelected);
             return View(model);
         }
 
@@ -173,8 +191,9 @@ namespace WebDT.Areas.Admin.Controllers
         public IActionResult Delete(int id)
         {
             var product = productDAL.GetProductById(id);
-            if (product == null)
+            if (product == null || product.Id == 0)
                 return RedirectToAction(nameof(Index));
+
             return View(product);
         }
 
@@ -185,7 +204,7 @@ namespace WebDT.Areas.Admin.Controllers
         {
             if (productDAL.DeleteProduct(id))
             {
-                _logDAL.InsertLog(
+                logDAL.InsertLog(
                     int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
                     "Xóa sản phẩm",
                     "Sản phẩm",
@@ -200,6 +219,18 @@ namespace WebDT.Areas.Admin.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // ==================== HELPER ====================
+        private List<SelectListItem> GetCategorySelectList(int? selectedId = null)
+        {
+            return categoryDAL.getAll()
+                .Select(c => new SelectListItem
+                {
+                    Text = c.Name,
+                    Value = c.Id.ToString(),
+                    Selected = selectedId.HasValue && c.Id == selectedId.Value
+                }).ToList();
         }
     }
 }
