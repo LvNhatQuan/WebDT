@@ -1,0 +1,58 @@
+﻿@model List<WebDT.Areas.Admin.Models.ReviewAdmin>
+
+@{
+    ViewData["Title"] = "Quản lý đánh giá";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<table class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Sản phẩm</th>
+            <th>Khách hàng</th>
+            <th>Đánh giá</th>
+            <th>Nội dung</th>
+            <th>Ngày</th>
+            <th width="120">Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Id</td>
+                <td>@r.ProductName</td>
+                <td>@r.CustomerName</td>
+                <td class="text-warning">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="@(i <= r.Rating ? "fa-solid" : "fa-regular") fa-star"></i>
+                    }
+                </td>
+                <td>@r.Comment</td>
+                <td>@r.CreatedAt.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <form asp-action="Delete"
+                          asp-route-id="@r.Id"
+                          method="post"
+                          class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-danger"
+                                onclick="return confirm('Xóa đánh giá này?')">
+                            Xóa
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

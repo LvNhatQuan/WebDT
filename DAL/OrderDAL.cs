@@ -189,5 +189,59 @@ ORDER BY oi.id ASC";
             db.closeConnection();
             return items;
         }
+        // =========================
+        // STAFF: LẤY DANH SÁCH ĐƠN
+        // =========================
+        public List<OrderModel> GetAllForStaff()
+        {
+            List<OrderModel> list = new();
+            db.openConnection();
+
+            string sql = @"
+SELECT *
+FROM orders
+ORDER BY order_date DESC";
+
+            using var cmd = new SqlCommand(sql, db.getConnecttion());
+            using var r = cmd.ExecuteReader();
+
+            while (r.Read())
+            {
+                list.Add(new OrderModel
+                {
+                    Id = Convert.ToInt32(r["id"]),
+                    UserId = r["user_id"] == DBNull.Value ? null : Convert.ToInt32(r["user_id"]),
+                    OrderDate = Convert.ToDateTime(r["order_date"]),
+                    GrandTotal = Convert.ToDecimal(r["grand_total"]),
+                    ShippingAddress = r["shipping_address"]?.ToString() ?? "",
+                    ReceiverName = r["receiver_name"]?.ToString() ?? "",
+                    ReceiverPhone = r["receiver_phone"]?.ToString() ?? "",
+                    Status = r["status"]?.ToString() ?? "pending"
+                });
+            }
+
+            db.closeConnection();
+            return list;
+        }
+
+        // =========================
+        // STAFF: CẬP NHẬT TRẠNG THÁI
+        // =========================
+        public bool UpdateStatus(int orderId, string status)
+        {
+            db.openConnection();
+
+            string sql = "UPDATE orders SET status = @st WHERE id = @id";
+
+            using var cmd = new SqlCommand(sql, db.getConnecttion());
+            cmd.Parameters.AddWithValue("@st", status);
+            cmd.Parameters.AddWithValue("@id", orderId);
+
+            int rows = cmd.ExecuteNonQuery();
+            db.closeConnection();
+
+            return rows > 0;
+        }
+
     }
 }

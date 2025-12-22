@@ -1,0 +1,142 @@
+﻿@model List<WebDT.Areas.Admin.Models.OrderAdmin>
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mb-3">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger mb-3">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Khách hàng</th>
+                <th>Người nhận</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th class="text-center" style="width:300px">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var o in Model)
+            {
+                <tr>
+                    <td class="fw-bold">#@o.Id</td>
+
+                    <td>
+                        <div class="fw-semibold">@o.UserName</div>
+                        <small class="text-muted">
+                            @o.ReceiverPhone
+                        </small>
+                    </td>
+
+                    <td>
+                        <div class="fw-semibold">@o.ReceiverName</div>
+                        <small class="text-muted">
+                            @o.ShippingAddress
+                        </small>
+                    </td>
+
+                    <td class="fw-bold text-danger">
+                        @o.GrandTotal.ToString("#,##0 đ")
+                    </td>
+
+                    <td>
+                        @switch (o.Status)
+                        {
+                            case "pending":
+                                <span class="badge bg-secondary">Chờ xử lý</span>
+                                break;
+                            case "confirmed":
+                                <span class="badge bg-info text-dark">Đã xác nhận</span>
+                                break;
+                            case "shipping":
+                                <span class="badge bg-warning text-dark">Đang giao</span>
+                                break;
+                            case "completed":
+                                <span class="badge bg-success">Hoàn thành</span>
+                                break;
+                            case "cancelled":
+                                <span class="badge bg-danger">Đã hủy</span>
+                                break;
+                            default:
+                                <span class="badge bg-dark">@o.Status</span>
+                                break;
+                        }
+                    </td>
+
+                    <td class="text-center">
+                        <a asp-action="Details"
+                           asp-route-id="@o.Id"
+                           class="btn btn-sm btn-outline-primary me-1">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        @if (o.Status == "pending")
+                        {
+                            <form asp-action="Confirm"
+                                  asp-route-id="@o.Id"
+                                  method="post"
+                                  class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-sm btn-success me-1"
+                                        title="Xác nhận đơn">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                            </form>
+                        }
+
+                        @if (o.Status == "confirmed")
+                        {
+                            <form asp-action="Shipping"
+                                  asp-route-id="@o.Id"
+                                  method="post"
+                                  class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-sm btn-warning me-1"
+                                        title="Chuyển sang giao hàng">
+                                    <i class="bi bi-truck"></i>
+                                </button>
+                            </form>
+                        }
+
+                        @if (o.Status == "pending" || o.Status == "confirmed")
+                        {
+                            <form asp-action="Cancel"
+                                  asp-route-id="@o.Id"
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Bạn có chắc muốn hủy đơn này?');">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-sm btn-danger"
+                                        title="Hủy đơn">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-inbox fs-1"></i>
+        <p class="mt-2">Chưa có đơn hàng nào</p>
+    </div>
+}

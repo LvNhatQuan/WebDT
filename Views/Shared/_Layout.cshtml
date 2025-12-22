@@ -40,7 +40,7 @@
 
                 <!-- LOGO -->
                 <a class="navbar-brand" asp-controller="Home" asp-action="Index">
-                    <img src="/Images/d&t.jpg" alt="D&T Group" style="height:40px;">
+                    <img src="/Images/d&t.jpg" alt="D&T Group" style="height:40px; mix-blend-mode:multiply;">
                 </a>
 
                 <!-- TOGGLER -->
@@ -75,7 +75,7 @@
                             </a>
                         </li>
 
-                       
+
                         <li class="nav-item">
                             <a class="nav-link text-dark"
                                asp-controller="Contact"
@@ -142,62 +142,76 @@
     <footer class="border-top footer text-muted mt-auto" style="background:#FFD4CD; font-size:17px">
         <div class="container py-4">
             <div class="row g-4">
-                <div class="col-12 col-sm-6 col-lg-2 text-center text-sm-start">
-                    <img src="~/img/logo-dt-group.jpg" class="img-fluid" alt="Logo DT Group" style="height:150px; mix-blend-mode: multiply;" />
+
+                <div class="col-12 col-lg-2 text-center text-lg-start">
+                    <img src="~/img/logo-dt-group.jpg"
+                         class="img-fluid rounded"
+                         alt="Logo DT Group"
+                         style="max-height:150px; mix-blend-mode: multiply;" />
                 </div>
 
-                <div class="col-12 col-sm-6 col-lg-4">
-                    <h2 class="fw-bold text-dark mb-3 text-center">CÔNG TY TNHH <br />DT GROUP</h2>
-                    <p class="text-dark text-justify">
-                        GPKD Số 4201794039 do Sở KH và ĐT TP Nha Trang cấp ngày 23/05/2018<br /><br />
-                        Địa chỉ: KCN Đắc Lộc, Vĩnh Phương, Tp. Nha Trang, Khánh Hòa<br /><br />
-                        Chuyên sản xuất, phân phối và kinh doanh thương mại các loại thực phẩm, mỹ phẩm làm đẹp từ nguyên liệu thiên nhiên – đặc sản của Việt Nam.
-                    </p>
-                    <p class="text-dark">© Bản quyền thuộc về DTGROUP</p>
+                <div class="col-12 col-md-6 col-lg-4 text-center text-lg-start">
+                    <h5 class="fw-bold text-dark mb-3">CÔNG TY TNHH DT GROUP</h5>
+                    <div class="text-dark">
+                        <p class="mb-2">GPKD Số 4201794039 do Sở KH và ĐT TP Nha Trang cấp ngày 23/05/2018</p>
+                        <p class="mb-2">Địa chỉ: KCN Đắc Lộc, Vĩnh Phương, Tp. Nha Trang, Khánh Hòa</p>
+                        <p class="mb-2">Chuyên sản xuất, phân phối và kinh doanh thương mại các loại thực phẩm, mỹ phẩm làm đẹp từ nguyên liệu thiên nhiên – đặc sản của Việt Nam.</p>
+                    </div>
+                    <p class="text-dark fw-bold mt-3">© Bản quyền thuộc về DTGROUP</p>
                 </div>
 
-                <div class="col-12 col-sm-6 col-lg-3">
-                    <h2 class="fw-bold text-dark mb-3 text-center">CHÍNH SÁCH</h2>
-                    <ul class="list-unstyled text-dark ms-5 mt-5">
-                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách thanh toán</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách khiếu nại</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách vận chuyển</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách đổi trả và hoàn tiền</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách bảo hành</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách kiểm hàng</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách bảo mật thông tin</a></li>
-                        <li><a href="#" class="text-decoration-underline text-dark">Đăng ký bộ công thương</a></li>
+                <div class="col-12 col-md-6 col-lg-3 text-center text-lg-start">
+                    <h5 class="fw-bold text-dark mb-3">CHÍNH SÁCH</h5>
+                    <ul class="list-unstyled text-dark ps-0">
+                        <li class="mb-2"><a href="/Home/Privacy#list-payment" class="text-decoration-none text-dark hover-link">Chính sách thanh toán</a></li>
+                        <li class="mb-2"><a href="/Home/Privacy#list-complaint" class="text-decoration-none text-dark hover-link">Chính sách khiếu nại</a></li>
+                        <li class="mb-2"><a href="/Home/Privacy#list-shipping" class="text-decoration-none text-dark hover-link">Chính sách vận chuyển</a></li>
+                        <li class="mb-2"><a href="/Home/Privacy#list-return" class="text-decoration-none text-dark hover-link">Chính sách đổi trả & hoàn tiền</a></li>
+                        <li class="mb-2"><a href="/Home/Privacy#list-warranty" class="text-decoration-none text-dark hover-link">Chính sách bảo hành</a></li>
+                        <li class="mb-2"><a href="/Home/Privacy#list-inspection" class="text-decoration-none text-dark hover-link">Chính sách kiểm hàng</a></li>
+                        <li class="mb-2"><a href="/Home/Privacy#list-privacy" class="text-decoration-none text-dark hover-link">Bảo mật thông tin</a></li>
+                        <li class="mt-3">
+                            <a href="http://online.gov.vn/Home/WebDetails/100511?AspxAutoDetectCookieSupport=1" target="_blank">
+                                <span class="text-decoration-underline text-dark fw-bold">Đăng ký bộ công thương</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
-                <div class="col-12 col-sm-6 col-lg-3">
-                    <h2 class="fw-bold text-dark mb-3 text-center">LIÊN HỆ</h2>
+                <div class="col-12 col-md-6 col-lg-3 text-center text-lg-start">
+                    <h5 class="fw-bold text-dark mb-3">LIÊN HỆ</h5>
 
-                    <div class="d-flex align-items-start mb-3 mt-5">
-                        <i class="fa-solid fa-house mt-1 me-2 text-dark"></i>
-                        <p class="text-dark m-0">
-                            KCN Đắc Lộc, Vĩnh Phương, Tp. Nha Trang, Khánh Hòa
-                        </p>
-                    </div>
+                    <div class="d-flex flex-column align-items-center align-items-lg-start gap-3">
+                        <div class="d-flex align-items-start">
+                            <i class="fa-solid fa-house mt-1 me-2 text-danger"></i>
+                            <span>KCN Đắc Lộc, Vĩnh Phương, Tp. Nha Trang, Khánh Hòa</span>
+                        </div>
 
-                    <div class="d-flex align-items-center mb-3">
-                        <i class="fa-solid fa-envelope me-2 text-dark"></i>
-                        <p class="text-dark m-0">
-                            info@dtvietnam.com
-                        </p>
-                    </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fa-solid fa-envelope me-2 text-danger"></i>
+                            <a href="mailto:info@dtvietnam.com" class="text-dark text-decoration-none">info@dtvietnam.com</a>
+                        </div>
 
-                    <div class="d-flex align-items-start">
-                        <i class="fa-solid fa-phone mt-1 me-2 text-dark"></i>
-                        <div class="text-dark">
-                            <strong>Gọi mua:</strong> <br />0833.416.868<br />
-                            <strong>Khiếu nại:</strong> <br />0847.236.868
+                        <div class="d-flex align-items-start">
+                            <i class="fa-solid fa-phone mt-1 me-2 text-danger"></i>
+                            <div>
+                                <div><strong>Gọi mua:</strong> 0833.416.868</div>
+                                <div><strong>Khiếu nại:</strong> 0847.236.868</div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </footer>
+
+    <style>
+        .hover-link:hover {
+            color: #d32f2f !important; /* Màu đỏ đậm khi di chuột vào */
+            text-decoration: underline !important;
+        }
+    </style>
 
     <!-- ================= JS ================= -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

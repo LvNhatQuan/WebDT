@@ -164,7 +164,7 @@ namespace WebDT.Areas.Admin.Controllers
             return View(model);
         }
 
-        // ================== DELETE (GET) - Hiển thị trang xác nhận ==================
+        // ================== DELETE (GET) ==================
         public IActionResult Delete(int id)
         {
             var coupon = _dal.GetById(id);
@@ -172,14 +172,13 @@ namespace WebDT.Areas.Admin.Controllers
 
             var productCount = _dal.GetProductsByCouponId(id).Count;
 
-            // Tạo dynamic model để truyền dữ liệu
             ViewBag.Coupon = coupon;
             ViewBag.ProductCount = productCount;
 
             return View();
         }
 
-        // ================== DELETE (POST) - Xác nhận xóa ==================
+        // ================== DELETE (POST) - ĐƠN GIẢN HÓA ==================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Delete(int id, bool confirm = false)
@@ -202,7 +201,7 @@ namespace WebDT.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ================== TOGGLE STATUS (POST) ==================
+        // ================== TOGGLE STATUS ==================
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("ToggleStatus")]

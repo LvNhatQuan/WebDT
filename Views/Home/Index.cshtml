@@ -25,16 +25,18 @@
                 <div class="carousel-item active">
                     <img src="@Url.Content("~/Images/banner1.jpg")"
                          class="d-block w-100"
+                         style="max-height:550px"
                          alt="Banner 1">
                 </div>
 
                 <div class="carousel-item">
                     <img src="@Url.Content("~/Images/banner2.jpg")"
                          class="d-block w-100"
+                         style="max-height:550px"
                          alt="Banner 2">
                 </div>
 
-               @*  <div class="carousel-item">
+                @*  <div class="carousel-item">
                     <img src="@Url.Content("~/Images/banner3.jpg")"
                          class="d-block w-100"
                          alt="Banner 3">
@@ -63,27 +65,39 @@
             🌟 SẢN PHẨM NỔI BẬT
         </h2>
 
-        <div class="row justify-content-center">
+        <div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3">
             @if (featuredProducts != null && featuredProducts.Any())
             {
+                // 1. Khai báo biến đếm
+                int i = 0;
+
                 foreach (var item in featuredProducts)
                 {
-                    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-                        <div class="card h-100 shadow-sm product-card">
+                    // 2. Tạo logic class: Nếu là phần tử thứ 5 (index 4) thì ẩn ở mobile/tablet, chỉ hiện ở Large (Laptop)
+                    string hideClass = (i == 4) ? "d-none d-lg-block" : "";
 
-                            <img src="@Url.Content("~/Images/SanPham/" + item.ImageUrl)"
-                                 onerror="this.onerror=null;this.src='@Url.Content("~/Images/no-image.png")';"
-                                 class="card-img-top"
-                                 style="height:200px;object-fit:cover;"
-                                 alt="@item.Name" />
+                    // Thêm biến hideClass vào class của thẻ col
+                    <div class="col @hideClass">
+                        <div class="card h-100 border1 background1 shadow-sm product-card rounded-0">
+                            <div class="p-2 overflow-hidden">
+                                <a asp-controller="Product"
+                                   asp-action="Detail"
+                                   asp-route-id="@item.Id"
+                                   class="d-block text-decoration-none zoom-container">
+                                    <img src="@Url.Content("~/Images/SanPham/" + item.ImageUrl)"
+                                         onerror="this.onerror=null;this.src='@Url.Content("~/Images/no-image.png")';"
+                                         class="card-img-top"
+                                         style="height:200px;object-fit:cover;"
+                                         alt="@item.Name" />
+                                </a>
+                            </div>
                             <div class="card-body text-center d-flex flex-column">
-                                <h6 class="card-title text-truncate"
-                                    title="@item.Name">
+                                <h6 class="card-title text-truncate" title="@item.Name">
                                     @item.Name
                                 </h6>
 
                                 <p class="text-danger fw-bold mb-2">
-                                    @string.Format(culture, "{0:N0} ₫", item.Price)
+                                    @string.Format(System.Globalization.CultureInfo.GetCultureInfo("vi-VN"), "{0:N0} ₫", item.Price)
                                 </p>
 
                                 <div class="mt-auto d-flex justify-content-center gap-2">
@@ -104,6 +118,9 @@
                             </div>
                         </div>
                     </div>
+
+                    // 3. Tăng biến đếm
+                    i++;
                 }
             }
             else
@@ -121,20 +138,32 @@
             🔥 SẢN PHẨM BÁN CHẠY
         </h2>
 
-        <div class="row justify-content-center">
+        <div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3">
             @if (bestSellerProducts != null && bestSellerProducts.Any())
             {
+                // 1. Khai báo biến đếm
+                int i = 0;
+
                 foreach (var item in bestSellerProducts)
                 {
-                    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-                        <div class="card h-100 shadow-sm product-card">
+                    // 2. Logic ẩn hiện: Nếu là sản phẩm thứ 5 (index 4) thì ẩn ở mobile, hiện ở Laptop (lg)
+                    string hideClass = (i == 4) ? "d-none d-lg-block" : "";
 
-                            <img src="@Url.Content("~/Images/SanPham/" + item.ImageUrl)"
-                                 onerror="this.onerror=null;this.src='@Url.Content("~/Images/no-image.png")';"
-                                 class="card-img-top"
-                                 style="height:200px;object-fit:cover;"
-                                 alt="@item.Name" />
-
+                    // Thêm biến @hideClass vào class của col
+                    <div class="col @hideClass">
+                        <div class="card h-100 border1 background1 shadow-sm product-card rounded-0">
+                            <div class="p-2 overflow-hidden">
+                                <a asp-controller="Product"
+                                   asp-action="Detail"
+                                   asp-route-id="@item.Id"
+                                   class="d-block text-decoration-none zoom-container">
+                                    <img src="@Url.Content("~/Images/SanPham/" + item.ImageUrl)"
+                                         onerror="this.onerror=null;this.src='@Url.Content("~/Images/no-image.png")';"
+                                         class="card-img-top"
+                                         style="height:200px;object-fit:cover;"
+                                         alt="@item.Name" />
+                                </a>
+                            </div>
                             <div class="card-body text-center d-flex flex-column">
                                 <h6 class="card-title text-truncate">
                                     @item.Name
@@ -162,29 +191,45 @@
                             </div>
                         </div>
                     </div>
+
+                    // 3. Tăng biến đếm sau mỗi vòng lặp
+                    i++;
                 }
             }
         </div>
     </div>
 
-    <!-- ================= CHỨNG NHẬN ================= -->
     <div class="div4 text-center my-5">
         <h2 class="text-danger fw-bold mb-4">
             🏆 Chứng nhận chất lượng
         </h2>
 
-        <div class="d-flex justify-content-center gap-4 flex-wrap">
-            <img src="@Url.Content("~/Images/chungnhan1.jpg")"
-                 class="rounded shadow"
-                 style="height:180px;" />
+        <div class="row g-2 justify-content-center px-2">
 
-            <img src="@Url.Content("~/Images/chungnhan2.jpg")"
-                 class="rounded shadow"
-                 style="height:180px;" />
+            <div class="col-4">
+                <a href="@Url.Content("~/Images/chungnhan1.jpg")" class="zoom-container d-block">
+                    <img src="@Url.Content("~/Images/chungnhan1.jpg")"
+                         class="rounded shadow zoom-img w-100"
+                         style="height: auto; aspect-ratio: 3/4; object-fit: contain; mix-blend-mode: multiply;" />
+                </a>
+            </div>
 
-            <img src="@Url.Content("~/Images/chungnhan3.jpg")"
-                 class="rounded shadow"
-                 style="height:180px;" />
+            <div class="col-4">
+                <a href="@Url.Content("~/Images/chungnhan2.jpg")" class="zoom-container d-block">
+                    <img src="@Url.Content("~/Images/chungnhan2.jpg")"
+                         class="rounded shadow zoom-img w-100"
+                         style="height: auto; aspect-ratio: 3/4; object-fit: contain; mix-blend-mode: multiply;" />
+                </a>
+            </div>
+
+            <div class="col-4">
+                <a href="@Url.Content("~/Images/chungnhan3.jpg")" class="zoom-container d-block">
+                    <img src="@Url.Content("~/Images/chungnhan3.jpg")"
+                         class="rounded shadow zoom-img w-100"
+                         style="height: auto; aspect-ratio: 3/4; object-fit: contain; mix-blend-mode: multiply;" />
+                </a>
+            </div>
+
         </div>
     </div>
 

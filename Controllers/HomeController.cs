@@ -12,8 +12,8 @@ namespace WebDT.Controllers
 
         public IActionResult Index()
         {
-            ViewBag.FeaturedProducts = _productDAL.GetFeaturedProducts(8);
-            ViewBag.BestSellerProducts = _productDAL.GetBestSellerProducts(8);
+            ViewBag.FeaturedProducts = _productDAL.GetFeaturedProducts(5);
+            ViewBag.BestSellerProducts = _productDAL.GetBestSellerProducts(5);
             ViewBag.Categories = _categoryDAL.GetAllWithCount();
 
             return View();

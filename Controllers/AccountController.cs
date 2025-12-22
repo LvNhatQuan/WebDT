@@ -17,6 +17,7 @@ namespace WebDT.Controllers
             _userDal = userDal;
         }
 
+        // ===================== PROFILE =====================
         [Authorize]
         public IActionResult Profile()
         {
@@ -34,6 +35,7 @@ namespace WebDT.Controllers
 
         [Authorize]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Profile(User model)
         {
             if (!ModelState.IsValid)
@@ -52,15 +54,18 @@ namespace WebDT.Controllers
 
             bool ok = _userDal.UpdateProfile(oldUser);
 
-            TempData[ok ? "SuccessMessage" : "ErrorMessage"] = ok
-                ? "Cập nhật thông tin thành công!"
-                : "Cập nhật thất bại.";
+            TempData[ok ? "SuccessMessage" : "ErrorMessage"] =
+                ok ? "Cập nhật thông tin thành công!" : "Cập nhật thất bại.";
 
             return View(oldUser);
         }
 
+        // ===================== LOGIN =====================
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login()
+        {
+            return View();
+        }
 
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
@@ -91,41 +96,60 @@ namespace WebDT.Controllers
                 return View();
             }
 
-            // ⭐ Claims chuẩn
+            // ================= CLAIMS CHUẨN =================
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),     // ⭐ MUST be Username để Profile load đúng
+                new Claim(ClaimTypes.Name, user.Username),   // BẮT BUỘC để Profile load đúng
                 new Claim(ClaimTypes.Role, user.Role ?? "customer")
             };
 
-            var claimsIdentity = new ClaimsIdentity(
+            var identity = new ClaimsIdentity(
                 claims,
                 CookieAuthenticationDefaults.AuthenticationScheme
             );
 
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity)
+                new ClaimsPrincipal(identity)
             );
 
             // Optional session
             HttpContext.Session.SetInt32("UserId", user.Id);
             HttpContext.Session.SetString("UserName", user.Username);
 
+            // ================= REDIRECT THEO ROLE =================
             if (user.Role == "admin")
-                return RedirectToAction("Index", "ProductAdmin", new { area = "Admin" });
+            {
+                return RedirectToAction(
+                    "Index",
+                    "ProductAdmin",
+                    new { area = "Admin" }
+                );
+            }
 
             if (user.Role == "staff")
-                return RedirectToAction("Index", "StaffDashboard");
+            {
+                return RedirectToAction(
+                    "Index",
+                    "StaffHome",
+                    new { area = "Staff" }
+                );
+            }
 
+            // customer
             return RedirectToAction("Index", "Home");
         }
 
+        // ===================== REGISTER =====================
         [HttpGet]
-        public IActionResult Register() => View();
+        public IActionResult Register()
+        {
+            return View();
+        }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Register(User model)
         {
             if (_userDal.CreateUser(model))
@@ -135,27 +159,34 @@ namespace WebDT.Controllers
             return View(model);
         }
 
+        // ===================== LOGOUT =====================
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "Account");
+            await HttpContext.SignOutAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme
+            );
+
+            return RedirectToAction("Login");
         }
 
-        public IActionResult AccessDenied() => View();
+        // ===================== ACCESS DENIED =====================
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
 
-        // =========================
-        // Password verify (plain + bcrypt nếu có thư viện)
-        // =========================
+        // ===================== PASSWORD VERIFY =====================
         private bool VerifyPassword(string stored, string input)
         {
             stored ??= "";
             input ??= "";
 
             // plain text
-            if (!stored.StartsWith("$2")) return stored == input;
+            if (!stored.StartsWith("$2"))
+                return stored == input;
 
-            // bcrypt (nếu project có BCrypt.Net-Next)
+            // bcrypt (nếu có BCrypt.Net-Next)
             try
             {
                 var t = Type.GetType("BCrypt.Net.BCrypt, BCrypt.Net-Next");
@@ -164,8 +195,7 @@ namespace WebDT.Controllers
                 var m = t.GetMethod("Verify", new[] { typeof(string), typeof(string) });
                 if (m == null) return false;
 
-                var ok = (bool)m.Invoke(null, new object[] { input, stored })!;
-                return ok;
+                return (bool)m.Invoke(null, new object[] { input, stored })!;
             }
             catch
             {

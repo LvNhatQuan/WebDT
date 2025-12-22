@@ -17,7 +17,7 @@ namespace WebDT.Areas.Admin.DAL
             List<CouponAdmin> list = new();
 
             using var cmd = new SqlCommand("SELECT * FROM coupons ORDER BY id DESC", connect.getConnecttion());
-            var reader = cmd.ExecuteReader();
+            using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
             {
@@ -36,14 +36,14 @@ namespace WebDT.Areas.Admin.DAL
             return list;
         }
 
-        // GET ACTIVE COUPONS
+        // GET ACTIVE COUPONS - Đơn giản hóa, sử dụng View có sẵn
         public List<CouponAdmin> GetActiveCoupons()
         {
             connect.openConnection();
             List<CouponAdmin> list = new();
 
-            using var cmd = new SqlCommand("SELECT * FROM coupons WHERE is_active = 1 AND GETDATE() BETWEEN start_date AND end_date ORDER BY id DESC", connect.getConnecttion());
-            var reader = cmd.ExecuteReader();
+            using var cmd = new SqlCommand("SELECT * FROM vw_active_coupons ORDER BY id DESC", connect.getConnecttion());
+            using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
             {
@@ -54,7 +54,7 @@ namespace WebDT.Areas.Admin.DAL
                     DiscountValue = (int)reader["discount_value"],
                     StartDate = (DateTime)reader["start_date"],
                     EndDate = (DateTime)reader["end_date"],
-                    IsActive = (bool)reader["is_active"]
+                    IsActive = true
                 });
             }
 
@@ -71,7 +71,7 @@ namespace WebDT.Areas.Admin.DAL
             using var cmd = new SqlCommand("SELECT * FROM coupons WHERE id = @id", connect.getConnecttion());
             cmd.Parameters.AddWithValue("@id", id);
 
-            var r = cmd.ExecuteReader();
+            using var r = cmd.ExecuteReader();
             if (r.Read())
             {
                 coupon = new CouponAdmin
@@ -158,7 +158,7 @@ namespace WebDT.Areas.Admin.DAL
             return result > 0;
         }
 
-        // DELETE COUPON WITH TRANSACTION
+        // DELETE COUPON - XÓA PHƯƠNG THỨC DeleteHard (KHÔNG DÙNG)
         public bool Delete(int id)
         {
             connect.openConnection();
@@ -206,7 +206,6 @@ namespace WebDT.Areas.Admin.DAL
             }
             catch (Exception ex)
             {
-                // Nếu có lỗi, rollback và thực hiện soft delete
                 try
                 {
                     transaction.Rollback();
@@ -245,7 +244,7 @@ namespace WebDT.Areas.Admin.DAL
 
             cmd.Parameters.AddWithValue("@couponId", couponId);
 
-            var reader = cmd.ExecuteReader();
+            using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
                 list.Add(new ProductAdmin
@@ -291,7 +290,6 @@ namespace WebDT.Areas.Admin.DAL
 
             try
             {
-                // Đầu tiên, xóa coupon khỏi tất cả sản phẩm
                 using var clearCmd = new SqlCommand(
                     "UPDATE products SET coupon_id = NULL WHERE coupon_id = @couponId",
                     connect.getConnecttion(),
@@ -299,7 +297,6 @@ namespace WebDT.Areas.Admin.DAL
                 clearCmd.Parameters.AddWithValue("@couponId", couponId);
                 clearCmd.ExecuteNonQuery();
 
-                // Sau đó, thêm coupon cho các sản phẩm được chọn
                 foreach (var productId in productIds)
                 {
                     using var cmd = new SqlCommand(
@@ -324,57 +321,5 @@ namespace WebDT.Areas.Admin.DAL
             }
         }
 
-        public bool DeleteHard(int id)
-        {
-            connect.openConnection();
-
-            using var cmd = new SqlCommand(
-                "DELETE FROM coupons WHERE id = @id",
-                connect.getConnecttion());
-            cmd.Parameters.AddWithValue("@id", id);
-
-            int result = cmd.ExecuteNonQuery();
-            connect.closeConnection();
-
-            return result > 0;
-        }
-
-        // CHECK COUPON USAGE
-        public CouponUsageInfo GetCouponUsageInfo(int id)
-        {
-            connect.openConnection();
-
-            var info = new CouponUsageInfo { CouponId = id };
-
-            using var cmd1 = new SqlCommand(
-                "SELECT COUNT(*) FROM products WHERE coupon_id = @id",
-                connect.getConnecttion());
-            cmd1.Parameters.AddWithValue("@id", id);
-            info.ProductCount = (int)cmd1.ExecuteScalar();
-
-            using var cmd2 = new SqlCommand(
-                "SELECT COUNT(*) FROM cart WHERE coupon_id = @id",
-                connect.getConnecttion());
-            cmd2.Parameters.AddWithValue("@id", id);
-            info.CartCount = (int)cmd2.ExecuteScalar();
-
-            using var cmd3 = new SqlCommand(
-                "SELECT COUNT(*) FROM order_items WHERE coupon_id = @id",
-                connect.getConnecttion());
-            cmd3.Parameters.AddWithValue("@id", id);
-            info.OrderItemCount = (int)cmd3.ExecuteScalar();
-
-            connect.closeConnection();
-            return info;
-        }
-
-        public class CouponUsageInfo
-        {
-            public int CouponId { get; set; }
-            public int ProductCount { get; set; }
-            public int CartCount { get; set; }
-            public int OrderItemCount { get; set; }
-            public bool IsInUse => ProductCount > 0 || CartCount > 0 || OrderItemCount > 0;
-        }
     }
 }

@@ -1,0 +1,54 @@
+﻿@model List<WebDT.Areas.Admin.Models.OrderAdmin>
+@{
+    ViewData["Title"] = "Đơn hàng đang giao";
+}
+
+<table class="table table-hover table-bordered align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Khách</th>
+            <th>Người nhận</th>
+            <th>Điện thoại</th>
+            <th>Địa chỉ giao</th>
+            <th width="220">Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>#@o.Id</td>
+                <td>@o.UserName</td>
+                <td>@o.ReceiverName</td>
+                <td>@o.ReceiverPhone</td>
+                <td>@o.ShippingAddress</td>
+                <td>
+                    <a asp-action="Details"
+                       asp-route-id="@o.Id"
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> Chi tiết
+                    </a>
+
+                    <form asp-action="Complete"
+                          asp-route-id="@o.Id"
+                          method="post"
+                          class="d-inline"
+                          onsubmit="return confirm('Xác nhận đã giao hàng?');">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-success">
+                            <i class="bi bi-check-circle"></i> Đã giao
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info mt-3">
+        Hiện không có đơn hàng nào đang giao.
+    </div>
+}

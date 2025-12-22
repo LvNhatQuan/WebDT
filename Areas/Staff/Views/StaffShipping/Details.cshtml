@@ -1,0 +1,42 @@
+﻿@model WebDT.Areas.Admin.Models.OrderAdmin
+@{
+    ViewData["Title"] = "Chi tiết giao hàng";
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header fw-bold">Thông tin giao hàng</div>
+            <div class="card-body">
+                <p><strong>Người nhận:</strong> @Model.ReceiverName</p>
+                <p><strong>Điện thoại:</strong> @Model.ReceiverPhone</p>
+                <p><strong>Địa chỉ:</strong> @Model.ShippingAddress</p>
+                <p>
+                    <strong>Trạng thái:</strong>
+                    <span class="badge bg-warning text-dark">
+                        @Model.Status
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-bold">Sản phẩm</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var i in Model.Items)
+                {
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>@i.ProductName × @i.Quantity</span>
+                        <strong>@i.TotalPrice.ToString("#,##0 đ")</strong>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">
+    ← Quay lại
+</a>

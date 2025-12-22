@@ -1,0 +1,141 @@
+﻿@model WebDT.Areas.Admin.Models.OrderAdmin
+
+@{
+    ViewData["Title"] = $"Chi tiết đơn hàng #{Model.Id}";
+}
+
+<div class="row">
+
+    <!-- ===== THÔNG TIN ĐƠN HÀNG ===== -->
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header fw-bold">
+                <i class="bi bi-receipt"></i> Thông tin đơn hàng
+            </div>
+            <div class="card-body">
+
+                <p><strong>Mã đơn:</strong> #@Model.Id</p>
+                <p><strong>Khách hàng:</strong> @Model.UserName</p>
+                <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+
+                <p>
+                    <strong>Trạng thái:</strong>
+                    <span class="badge
+                        @(Model.Status == "pending" ? "bg-secondary" :
+                                                    Model.Status == "confirmed" ? "bg-info text-dark" :
+                                                    Model.Status == "shipping" ? "bg-warning text-dark" :
+                                                    Model.Status == "completed" ? "bg-success" :
+                                                    "bg-danger")">
+                        @Model.Status
+                    </span>
+                </p>
+
+                <hr />
+
+                <p><strong>Tạm tính:</strong> @Model.SubTotal.ToString("#,##0 đ")</p>
+                <p><strong>Phí ship:</strong> @Model.ShippingFee.ToString("#,##0 đ")</p>
+                <p><strong>Giảm giá:</strong> @Model.DiscountAmount.ToString("#,##0 đ")</p>
+
+                <h5 class="text-danger fw-bold">
+                    Tổng cộng: @Model.GrandTotal.ToString("#,##0 đ")
+                </h5>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== THÔNG TIN NGƯỜI NHẬN ===== -->
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header fw-bold">
+                <i class="bi bi-person-lines-fill"></i> Thông tin giao hàng
+            </div>
+            <div class="card-body">
+
+                <p><strong>Người nhận:</strong> @Model.ReceiverName</p>
+                <p><strong>SĐT:</strong> @Model.ReceiverPhone</p>
+                <p><strong>Địa chỉ:</strong></p>
+                <div class="border rounded p-2 bg-light">
+                    @Model.ShippingAddress
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== DANH SÁCH SẢN PHẨM ===== -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-bold">
+        <i class="bi bi-box-seam"></i> Sản phẩm trong đơn
+    </div>
+    <div class="card-body p-0">
+
+        <table class="table table-bordered mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th>Giá</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.ProductName</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Price.ToString("#,##0 đ")</td>
+                        <td class="text-danger fw-bold">
+                            @item.TotalPrice.ToString("#,##0 đ")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<!-- ===== HÀNH ĐỘNG STAFF ===== -->
+<div class="d-flex gap-2">
+
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+
+    @if (Model.Status == "pending")
+    {
+        <form asp-action="Confirm" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-success">
+                <i class="bi bi-check-circle"></i> Xác nhận đơn
+            </button>
+        </form>
+    }
+
+    @if (Model.Status == "confirmed")
+    {
+        <form asp-action="Shipping" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-warning">
+                <i class="bi bi-truck"></i> Chuyển sang giao hàng
+            </button>
+        </form>
+    }
+
+    @if (Model.Status != "completed" && Model.Status != "cancelled")
+    {
+        <form asp-action="Cancel" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn hàng này?');">
+            @Html.AntiForgeryToken()
+            <button class="btn btn-danger">
+                <i class="bi bi-x-circle"></i> Hủy đơn
+            </button>
+        </form>
+    }
+
+</div>
