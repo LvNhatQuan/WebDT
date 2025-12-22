@@ -139,90 +139,62 @@
     <main class="container mt-4">
         @RenderBody()
     </main>
+    <footer class="border-top footer text-muted mt-auto" style="background:#FFD4CD; font-size:17px">
+        <div class="container py-4">
+            <div class="row g-4">
+                <div class="col-12 col-sm-6 col-lg-2 text-center text-sm-start">
+                    <img src="~/img/logo-dt-group.jpg" class="img-fluid" alt="Logo DT Group" style="height:150px; mix-blend-mode: multiply;" />
+                </div>
 
-    <!-- ================= FOOTER ================= -->
-    <footer class="border-top text-dark pt-4 pb-4" style="background-color: #ffe4e1;">
-        <div class="container">
-            <div class="row">
+                <div class="col-12 col-sm-6 col-lg-4">
+                    <h2 class="fw-bold text-dark mb-3 text-center">CÔNG TY TNHH <br />DT GROUP</h2>
+                    <p class="text-dark text-justify">
+                        GPKD Số 4201794039 do Sở KH và ĐT TP Nha Trang cấp ngày 23/05/2018<br /><br />
+                        Địa chỉ: KCN Đắc Lộc, Vĩnh Phương, Tp. Nha Trang, Khánh Hòa<br /><br />
+                        Chuyên sản xuất, phân phối và kinh doanh thương mại các loại thực phẩm, mỹ phẩm làm đẹp từ nguyên liệu thiên nhiên – đặc sản của Việt Nam.
+                    </p>
+                    <p class="text-dark">© Bản quyền thuộc về DTGROUP</p>
+                </div>
 
-                <!-- CỘT 1: THÔNG TIN CÔNG TY -->
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="d-flex">
-                        <img src="/Images/d&t.jpg" style="height:60px" class="me-3">
-                        <div>
-                            <h6 class="fw-bold">CÔNG TY TNHH DT GROUP</h6>
-                            <p class="small mb-1">GPKD Số 4201794039 do Sở KH và DT TP Nha Trang cấp ngày 23/05/2018</p>
-                            <p class="small mb-1">Địa chỉ: KCN Đắc Lộc, Vĩnh Phương, Tp. Nha Trang, Khánh Hòa</p>
-                            <p class="small mb-1">Chuyên sản xuất, phân phối và kinh doanh thương mại các loại thực phẩm, mỹ phẩm làm đẹp từ nguyên liệu thiên nhiên – đặc sản của Việt Nam.</p>
-                            <p class="small mb-0">© Bản quyền thuộc về DTGROUP</p>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <h2 class="fw-bold text-dark mb-3 text-center">CHÍNH SÁCH</h2>
+                    <ul class="list-unstyled text-dark ms-5 mt-5">
+                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách thanh toán</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách khiếu nại</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách vận chuyển</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách đổi trả và hoàn tiền</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách bảo hành</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách kiểm hàng</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-underline text-dark">Chính sách bảo mật thông tin</a></li>
+                        <li><a href="#" class="text-decoration-underline text-dark">Đăng ký bộ công thương</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <h2 class="fw-bold text-dark mb-3 text-center">LIÊN HỆ</h2>
+
+                    <div class="d-flex align-items-start mb-3 mt-5">
+                        <i class="fa-solid fa-house mt-1 me-2 text-dark"></i>
+                        <p class="text-dark m-0">
+                            KCN Đắc Lộc, Vĩnh Phương, Tp. Nha Trang, Khánh Hòa
+                        </p>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fa-solid fa-envelope me-2 text-dark"></i>
+                        <p class="text-dark m-0">
+                            info@dtvietnam.com
+                        </p>
+                    </div>
+
+                    <div class="d-flex align-items-start">
+                        <i class="fa-solid fa-phone mt-1 me-2 text-dark"></i>
+                        <div class="text-dark">
+                            <strong>Gọi mua:</strong> <br />0833.416.868<br />
+                            <strong>Khiếu nại:</strong> <br />0847.236.868
                         </div>
                     </div>
                 </div>
-
-                <!-- CỘT 2: CHÍNH SÁCH -->
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <h6 class="fw-bold mb-3">CHÍNH SÁCH</h6>
-                    <ul class="list-unstyled small">
-                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách thanh toán</a></li>
-                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách khiếu nại</a></li>
-                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách vận chuyển</a></li>
-                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách đổi trả và hoàn tiền</a></li>
-                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách bảo hành</a></li>
-                        <li class="mb-2"><a href="#" class="text-dark text-decoration-none">Chính sách kiểm hàng</a></li>
-                        <li class="mb-0"><a href="#" class="text-dark text-decoration-none">Chính sách bảo mật thông tin</a></li>
-                    </ul>
-                </div>
-
-                <!-- CỘT 3: LIÊN HỆ -->
-                <div class="col-lg-4 col-md-12 mb-4">
-                    <h6 class="fw-bold mb-3">LIÊN HỆ</h6>
-                    <ul class="list-unstyled small">
-                        <li class="mb-2 d-flex align-items-start">
-                            <i class="bi bi-geo-alt me-2" style="min-width: 20px;"></i>
-                            <span>KCN Đắc Lộc, Vĩnh Phương, TP. Nha Trang</span>
-                        </li>
-                        <li class="mb-2 d-flex align-items-start">
-                            <i class="bi bi-envelope me-2" style="min-width: 20px;"></i>
-                            <span>info@dtvietnam.com</span>
-                        </li>
-                        <li class="mb-2 d-flex align-items-start">
-                            <i class="bi bi-telephone me-2" style="min-width: 20px;"></i>
-                            <span>Gọi mua: 0833.416.868</span>
-                        </li>
-                        <li class="mb-0 d-flex align-items-start">
-                            <i class="bi bi-headset me-2" style="min-width: 20px;"></i>
-                            <span>Khiếu nại: 0847.236.868</span>
-                        </li>
-                    </ul>
-
-                    <!-- Thêm font awesome hoặc bootstrap icons nếu muốn dùng icon -->
-                    <style>
-                        .bi {
-                            display: inline-block;
-                            width: 1em;
-                            height: 1em;
-                            background-size: contain;
-                            background-repeat: no-repeat;
-                        }
-
-                        .bi-geo-alt {
-                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z'/%3E%3Cpath d='M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z'/%3E%3C/svg%3E");
-                        }
-
-                        .bi-envelope {
-                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z'/%3E%3C/svg%3E");
-                        }
-
-                        .bi-telephone {
-                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z'/%3E%3C/svg%3E");
-                        }
-
-                        .bi-headset {
-                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5z'/%3E%3C/svg%3E");
-                        }
-                    </style>
-                </div>
-
             </div>
         </div>
     </footer>

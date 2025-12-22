@@ -13,7 +13,7 @@ namespace WebDT.Controllers
         // ============================
         public IActionResult Index(int? categoryId, int page = 1, string sortOrder = "")
         {
-            int pageSize = 6;
+            int pageSize = 5;
 
             ViewData["CategoryId"] = categoryId;
             ViewData["SortOrder"] = sortOrder;
@@ -40,15 +40,9 @@ namespace WebDT.Controllers
         public IActionResult Detail(int id)
         {
             var product = _productDal.GetProductById(id);
+
             if (product == null)
-                return NotFound();
-
-            var reviewDal = new ReviewDAL();
-            var reviews = reviewDal.GetByProductId(id);
-
-            ViewBag.Reviews = reviews;
-            ViewBag.ReviewCount = reviews.Count;
-            ViewBag.AvgRating = reviews.Count > 0 ? reviews.Average(r => r.Rating) : 0;
+                return NotFound("Không tìm thấy sản phẩm");
 
             return View(product);
         }
@@ -58,7 +52,7 @@ namespace WebDT.Controllers
         // ============================
         public IActionResult Search(string keyword, int page = 1, string sortOrder = "")
         {
-            int pageSize = 6;
+            int pageSize = 5;
 
             // Nếu keyword rỗng hoặc null, hiển thị tất cả sản phẩm
             if (string.IsNullOrWhiteSpace(keyword))
