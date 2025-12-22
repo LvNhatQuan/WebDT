@@ -152,10 +152,18 @@ namespace WebDT.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Register(User model)
         {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            model.Role = "customer";
+            model.IsActive = true;
+            model.IsLocked = false;
+            model.CreatedAt = DateTime.Now;
+
             if (_userDal.CreateUser(model))
                 return RedirectToAction("Login");
 
-            TempData["Error"] = "Đăng ký thất bại!";
+            TempData["Error"] = "Email hoặc Username đã tồn tại!";
             return View(model);
         }
 

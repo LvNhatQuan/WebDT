@@ -71,7 +71,18 @@
 <!-- Thanh tìm kiếm -->
 <!-- Hiển thị sản phẩm -->
 <fieldset class="custom-fieldset mt-5">
-    <legend>Yến Sào</legend>
+    @if (Model.Products.Any())
+    {
+        @foreach (var p in Model.Products)
+        {
+            @if (p.CategoryId == categoryId)
+            {
+                <legend>@p.CategoryName</legend>
+            }
+
+            break;
+        }
+    }
 
     <!-- Hiển thị trạng thái sắp xếp hiện tại -->
     @if (!string.IsNullOrEmpty(sortOrder))
