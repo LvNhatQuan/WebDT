@@ -123,7 +123,7 @@ https://www.figma.com/design/iBC2EPukhRyibOqiRYQZGH/DTGroup
 
 | Chính sách 1 | Chính sách 2 |
 |--------------|--------------|
-| <img src="https://github.com/user-attachments/assets/32223c6c-7b13-44e5-b96d-ab69138d8695" width="400"/> | <img src="https://github.com/user-attachments/assets/ac2664b0-0698-463a-8cd2-8e23c9dd7df9" width="400"/> |
+| <img src="https://github.com/user-attachments/assets/3223c6c8-7b13-44e5-b96d-ab69138d8695" width="400"/> | <img src="https://github.com/user-attachments/assets/ac2664b0-0698-463a-8cd2-8e23c9dd7df9" width="400"/> |
 
 | Chính sách 3 | Chính sách 4 |
 |--------------|--------------|
