@@ -59,8 +59,14 @@ git clone https://github.com/LvNhatQuan/WebDT.git
 
 ## Thiết kế giao diện (Figma)
 
-Link Figma:  
+Thiết kế UI/UX của dự án được thực hiện trên Figma
+
+**Link Figma:**  
 https://www.figma.com/design/iBC2EPukhRyibOqiRYQZGH/DTGroup
+
+| Tổng quan thiết kế |
+|-------------------|
+| <img src="https://github.com/user-attachments/assets/52d62cc6-37ab-4c0b-86ca-f225cee14660" width="900"/> |
 
 ---
 
