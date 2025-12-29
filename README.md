@@ -119,6 +119,26 @@ https://www.figma.com/design/iBC2EPukhRyibOqiRYQZGH/DTGroup
 
 ---
 
+#### Chính sách
+
+| Chính sách 1 | Chính sách 2 |
+|--------------|--------------|
+| <img src="https://github.com/user-attachments/assets/32223c6c-7b13-44e5-b96d-ab69138d8695" width="400"/> | <img src="https://github.com/user-attachments/assets/ac2664b0-0698-463a-8cd2-8e23c9dd7df9" width="400"/> |
+
+| Chính sách 3 | Chính sách 4 |
+|--------------|--------------|
+| <img src="https://github.com/user-attachments/assets/1d348e5d-7528-4ee8-96cd-6df779ead161" width="400"/> | <img src="https://github.com/user-attachments/assets/6b66e964-0bbc-4259-85bd-f988d60fbb81" width="400"/> |
+
+| Chính sách 5 | Chính sách 6 |
+|--------------|--------------|
+| <img src="https://github.com/user-attachments/assets/93f75197-21b9-4e34-906e-4d4d2a570df4" width="400"/> | <img src="https://github.com/user-attachments/assets/2f4a4e8e-cbdf-403e-9147-9695f31cfd04" width="400"/> |
+
+| Chính sách 7 |
+|--------------|
+| <img src="https://github.com/user-attachments/assets/d7b4ce1d-33b4-4a1b-99de-2b222b1254f3" width="800"/> |
+
+---
+
 ### Demo giao diện – Admin
 
 | Trang quản lý | Quản lý sản phẩm |
