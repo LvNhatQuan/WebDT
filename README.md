@@ -57,6 +57,13 @@ git clone https://github.com/LvNhatQuan/WebDT.git
 ```
 ---
 
+## Thiết kế giao diện (Figma)
+
+Link Figma:  
+https://www.figma.com/design/iBC2EPukhRyibOqiRYQZGH/DTGroup
+
+---
+
 ## CSDL & Demo Sản Phẩm
 
 ### Cơ sở dữ liệu
