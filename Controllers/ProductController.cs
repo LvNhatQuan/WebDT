@@ -104,13 +104,6 @@ namespace WebDT.Controllers
             return View(items);
         }
 
-        // ============================
-        // SIMPLE SEARCH (for backward compatibility)
-        // ============================
-        public IActionResult SimpleSearch(string keyword)
-        {
-            var products = _productDal.SimpleSearch(keyword);
-            return View(products);
-        }
+
     }
 }

@@ -197,11 +197,12 @@
 {
     <nav aria-label="Page navigation" class="mt-5">
         <ul class="pagination justify-content-center">
+
             @if (Model.HasPreviousPage)
             {
                 <li class="page-item">
                     <a class="page-link"
-                       href="?keyword=@ViewData["SearchKeyword"]&sortOrder=@ViewData["SortOrder"]&page=@(Model.CurrentPageIndex - 1)">
+                       href="?categoryId=@ViewData["CategoryId"]&keyword=@ViewData["SearchKeyword"]&sortOrder=@ViewData["SortOrder"]&page=@(Model.CurrentPageIndex - 1)">
                         <i class="fa-solid fa-chevron-left"></i>
                     </a>
                 </li>
@@ -211,7 +212,7 @@
             {
                 <li class="page-item @(i == Model.CurrentPageIndex ? "active" : "")">
                     <a class="page-link"
-                       href="?keyword=@ViewData["SearchKeyword"]&sortOrder=@ViewData["SortOrder"]&page=@i">
+                       href="?categoryId=@ViewData["CategoryId"]&keyword=@ViewData["SearchKeyword"]&sortOrder=@ViewData["SortOrder"]&page=@i">
                         @i
                     </a>
                 </li>
@@ -221,7 +222,7 @@
             {
                 <li class="page-item">
                     <a class="page-link"
-                       href="?keyword=@ViewData["SearchKeyword"]&sortOrder=@ViewData["SortOrder"]&page=@(Model.CurrentPageIndex + 1)">
+                       href="?categoryId=@ViewData["CategoryId"]&keyword=@ViewData["SearchKeyword"]&sortOrder=@ViewData["SortOrder"]&page=@(Model.CurrentPageIndex + 1)">
                         <i class="fa-solid fa-chevron-right"></i>
                     </a>
                 </li>

@@ -28,7 +28,6 @@ namespace WebDT.DAL
                 Discount = r.IsDBNull(r.GetOrdinal("Discount"))
                     ? 0
                     : Convert.ToDecimal(r["Discount"])
-
             };
         }
 
@@ -56,22 +55,6 @@ namespace WebDT.DAL
         ";
 
         // ===============================
-        // GET ALL PRODUCTS
-        // ===============================
-        public List<Product> GetAllProducts()
-        {
-            List<Product> list = new();
-            string sql = BaseSelectQuery + " WHERE p.is_active = 1 ORDER BY p.created_at DESC";
-
-            _db.OpenConnection();
-            using var cmd = new SqlCommand(sql, _db.GetConnection());
-            using var r = cmd.ExecuteReader();
-            while (r.Read()) list.Add(Map(r));
-            _db.CloseConnection();
-            return list;
-        }
-
-        // ===============================
         // GET PRODUCT BY ID
         // ===============================
         public Product? GetProductById(int id)
@@ -89,27 +72,6 @@ namespace WebDT.DAL
             _db.CloseConnection();
 
             return p;
-        }
-
-        // ===============================
-        // GET PRODUCT BY CATEGORY
-        // ===============================
-        public List<Product> GetProductsByCategory(int categoryId)
-        {
-            List<Product> list = new();
-
-            string sql = BaseSelectQuery + @"
-                WHERE p.category_id = @cat AND p.is_active = 1
-                ORDER BY p.created_at DESC";
-
-            _db.OpenConnection();
-            using var cmd = new SqlCommand(sql, _db.GetConnection());
-            cmd.Parameters.AddWithValue("@cat", categoryId);
-            using var r = cmd.ExecuteReader();
-
-            while (r.Read()) list.Add(Map(r));
-            _db.CloseConnection();
-            return list;
         }
 
         // ===============================
@@ -211,7 +173,6 @@ namespace WebDT.DAL
 
             if (sort == "best_selling")
             {
-                // Sắp xếp theo bán chạy nhất
                 string sql = @"
             SELECT 
                 p.id AS Id,
@@ -253,7 +214,6 @@ namespace WebDT.DAL
             }
             else
             {
-                // Các loại sắp xếp khác
                 string sortQuery = sort switch
                 {
                     "price_asc" => " ORDER BY p.price ASC ",
@@ -263,16 +223,20 @@ namespace WebDT.DAL
                     _ => " ORDER BY p.created_at DESC "
                 };
 
+                // SỬA: Dùng parameter thay vì string interpolation
                 string sql = BaseSelectQuery + @"
             WHERE p.is_active = 1 "
                     + (categoryId.HasValue ? " AND p.category_id = @cat " : "") +
                     sortQuery +
-                    $" OFFSET {skip} ROWS FETCH NEXT {pageSize} ROWS ONLY";
+                    " OFFSET @skip ROWS FETCH NEXT @pageSize ROWS ONLY";  // <-- Sửa thành parameter
 
                 _db.OpenConnection();
                 using var cmd = new SqlCommand(sql, _db.GetConnection());
                 if (categoryId.HasValue)
                     cmd.Parameters.AddWithValue("@cat", categoryId.Value);
+                // THÊM: Truyền skip và pageSize parameters
+                cmd.Parameters.AddWithValue("@skip", skip);
+                cmd.Parameters.AddWithValue("@pageSize", pageSize);
                 using var r = cmd.ExecuteReader();
                 while (r.Read()) list.Add(Map(r));
                 _db.CloseConnection();
@@ -293,7 +257,7 @@ namespace WebDT.DAL
             _db.OpenConnection();
             using var cmd = new SqlCommand(sql, _db.GetConnection());
             if (categoryId.HasValue)
-                cmd.Parameters.AddWithValue("@cat", categoryId);
+                cmd.Parameters.AddWithValue("@cat", categoryId.Value);  // Sửa: .Value thay vì categoryId
 
             int total = (int)cmd.ExecuteScalar();
             _db.CloseConnection();
@@ -311,7 +275,6 @@ namespace WebDT.DAL
 
             if (sort == "best_selling")
             {
-                // Query for best selling products
                 string sql = @"
             SELECT 
                 p.id AS Id,
@@ -352,7 +315,6 @@ namespace WebDT.DAL
             }
             else
             {
-                // Regular sorting for other cases
                 string sortQuery = sort switch
                 {
                     "price_asc" => " ORDER BY p.price ASC ",
@@ -366,11 +328,14 @@ namespace WebDT.DAL
             WHERE p.is_active = 1
                 AND (p.name LIKE @kw OR p.description LIKE @kw)
             " + sortQuery +
-                    $" OFFSET {skip} ROWS FETCH NEXT {pageSize} ROWS ONLY";
+                    " OFFSET @skip ROWS FETCH NEXT @pageSize ROWS ONLY";
 
                 _db.OpenConnection();
                 using var cmd = new SqlCommand(sql, _db.GetConnection());
                 cmd.Parameters.AddWithValue("@kw", "%" + keyword + "%");
+                // THÊM: Truyền skip và pageSize parameters
+                cmd.Parameters.AddWithValue("@skip", skip);
+                cmd.Parameters.AddWithValue("@pageSize", pageSize);
                 using var r = cmd.ExecuteReader();
                 while (r.Read()) list.Add(Map(r));
                 _db.CloseConnection();
@@ -397,28 +362,6 @@ namespace WebDT.DAL
             _db.CloseConnection();
 
             return total;
-        }
-
-        // ===============================
-        // SIMPLE SEARCH (For backward compatibility)
-        // ===============================
-        public List<Product> SimpleSearch(string keyword)
-        {
-            List<Product> list = new();
-
-            string sql = BaseSelectQuery + @"
-                WHERE p.is_active = 1
-                AND (p.name LIKE @kw OR p.description LIKE @kw)
-                ORDER BY p.created_at DESC";
-
-            _db.OpenConnection();
-            using var cmd = new SqlCommand(sql, _db.GetConnection());
-            cmd.Parameters.AddWithValue("@kw", "%" + keyword + "%");
-            using var r = cmd.ExecuteReader();
-
-            while (r.Read()) list.Add(Map(r));
-            _db.CloseConnection();
-            return list;
         }
     }
 }

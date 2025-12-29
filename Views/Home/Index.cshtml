@@ -99,22 +99,30 @@
                                 <p class="text-danger fw-bold mb-2">
                                     @string.Format(System.Globalization.CultureInfo.GetCultureInfo("vi-VN"), "{0:N0} ₫", item.Price)
                                 </p>
-
+                                <!-- NÚT -->
                                 <div class="mt-auto d-flex justify-content-center gap-2">
-                                    <a asp-controller="Cart"
-                                       asp-action="AddToCart"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-success btn-sm">
-                                        Thêm vào giỏ
-                                    </a>
+                                <form asp-controller="Cart"
+                                      asp-action="AddToCart"
+                                      method="post"
+                                      class="d-flex justify-content-center gap-3">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="productId" value="@item.Id" />
+                                    <input type="hidden" name="quantity" id="cartQty" value="1" />
 
-                                    <a asp-controller="Product"
-                                       asp-action="Detail"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-outline-primary btn-sm">
-                                        Chi tiết
-                                    </a>
+                                    <button type="submit"
+                                                class="btn btn-success btn-sm">
+                                            Thêm vào giỏ
+                                    </button>
+
+                                        <a asp-controller="Product"
+                                           asp-action="Detail"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-outline-primary btn-sm">
+                                            Chi tiết
+                                        </a>
+                                </form>
                                 </div>
+                                
                             </div>
                         </div>
                     </div>
@@ -173,20 +181,28 @@
                                     @string.Format(culture, "{0:N0} ₫", item.Price)
                                 </p>
 
+                                <!-- NÚT -->
                                 <div class="mt-auto d-flex justify-content-center gap-2">
-                                    <a asp-controller="Cart"
-                                       asp-action="AddToCart"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-success btn-sm">
-                                        Thêm
-                                    </a>
+                                    <form asp-controller="Cart"
+                                          asp-action="AddToCart"
+                                          method="post"
+                                          class="d-flex justify-content-center gap-3">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="productId" value="@item.Id" />
+                                        <input type="hidden" name="quantity" id="cartQty" value="1" />
 
-                                    <a asp-controller="Product"
-                                       asp-action="Detail"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-outline-primary btn-sm">
-                                        Chi tiết
-                                    </a>
+                                        <button type="submit"
+                                                class="btn btn-success btn-sm">
+                                            Thêm vào giỏ
+                                        </button>
+
+                                        <a asp-controller="Product"
+                                           asp-action="Detail"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-outline-primary btn-sm">
+                                            Chi tiết
+                                        </a>
+                                    </form>
                                 </div>
                             </div>
                         </div>

@@ -36,31 +36,7 @@ namespace WebDT.Areas.Admin.DAL
             return list;
         }
 
-        // GET ACTIVE COUPONS - Đơn giản hóa, sử dụng View có sẵn
-        public List<CouponAdmin> GetActiveCoupons()
-        {
-            connect.openConnection();
-            List<CouponAdmin> list = new();
 
-            using var cmd = new SqlCommand("SELECT * FROM vw_active_coupons ORDER BY id DESC", connect.getConnecttion());
-            using var reader = cmd.ExecuteReader();
-
-            while (reader.Read())
-            {
-                list.Add(new CouponAdmin
-                {
-                    Id = (int)reader["id"],
-                    EventName = reader["event_name"].ToString()!,
-                    DiscountValue = (int)reader["discount_value"],
-                    StartDate = (DateTime)reader["start_date"],
-                    EndDate = (DateTime)reader["end_date"],
-                    IsActive = true
-                });
-            }
-
-            connect.closeConnection();
-            return list;
-        }
 
         // GET COUPON BY ID
         public CouponAdmin? GetById(int id)
